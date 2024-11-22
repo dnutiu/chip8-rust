@@ -6,12 +6,42 @@ use std::path::Path;
 
 const MEMORY_SIZE: usize = 4096;
 const NUMBER_OF_REGISTERS: usize = 16;
+const FONT_SPRITES: [u8; 80] = [
+    0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
+    0x20, 0x60, 0x20, 0x20, 0x70, // 1
+    0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
+    0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
+    0x90, 0x90, 0xF0, 0x10, 0x10, // 4
+    0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
+    0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
+    0xF0, 0x10, 0x20, 0x40, 0x40, // 7
+    0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
+    0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
+    0xF0, 0x90, 0xF0, 0x90, 0x90, // A
+    0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
+    0xF0, 0x80, 0x80, 0x80, 0xF0, // C
+    0xE0, 0x90, 0x90, 0x90, 0xE0, // D
+    0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
+    0xF0, 0x80, 0xF0, 0x80, 0x80, // F
+];
 
 /// Emulator emulates the Chip8 CPU.
 pub struct Emulator {
+    /// Memory represents the emulator's memory.
     memory: [u8; MEMORY_SIZE],
-    registers: [u16; NUMBER_OF_REGISTERS],
+    /// Registers holds the general purpose registers.
+    registers: [u8; NUMBER_OF_REGISTERS],
+    /// The index register store memory addresses.
+    index_register: u16,
+    /// The program counter register tracks the currently executing instruction.
     program_counter: u16,
+    /// The delay timer register. It is decremented at a rate of 60 Hz until it reaches 0.
+    delay_timer: u8,
+    /// The sound timer register. It is decremented at a rate of 60 Hz until it reaches 0.
+    /// It plays a beeping sound when it's value is different from 0.
+    sound_timer: u8,
+    /// The stack pointer register.
+    stack_pointer: u8,
 }
 
 impl Emulator {
@@ -21,7 +51,11 @@ impl Emulator {
         let mut emulator = Emulator {
             memory: [0; 4096],
             registers: [0; 16],
+            index_register: 0,
             program_counter: 0,
+            delay_timer: 0,
+            sound_timer: 0,
+            stack_pointer: 0,
         };
 
         emulator.load_font_data();
@@ -31,24 +65,6 @@ impl Emulator {
 
     fn load_font_data(&mut self) {
         info!("Loading font data...");
-        const FONT_SPRITES: [u8; 80] = [
-            0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
-            0x20, 0x60, 0x20, 0x20, 0x70, // 1
-            0xF0, 0x10, 0xF0, 0x80, 0xF0, // 2
-            0xF0, 0x10, 0xF0, 0x10, 0xF0, // 3
-            0x90, 0x90, 0xF0, 0x10, 0x10, // 4
-            0xF0, 0x80, 0xF0, 0x10, 0xF0, // 5
-            0xF0, 0x80, 0xF0, 0x90, 0xF0, // 6
-            0xF0, 0x10, 0x20, 0x40, 0x40, // 7
-            0xF0, 0x90, 0xF0, 0x90, 0xF0, // 8
-            0xF0, 0x90, 0xF0, 0x10, 0xF0, // 9
-            0xF0, 0x90, 0xF0, 0x90, 0x90, // A
-            0xE0, 0x90, 0xE0, 0x90, 0xE0, // B
-            0xF0, 0x80, 0x80, 0x80, 0xF0, // C
-            0xE0, 0x90, 0x90, 0x90, 0xE0, // D
-            0xF0, 0x80, 0xF0, 0x80, 0xF0, // E
-            0xF0, 0x80, 0xF0, 0x80, 0x80, // F
-        ];
         FONT_SPRITES
             .iter()
             .enumerate()
@@ -87,5 +103,35 @@ impl Emulator {
 
         debug!("Memory:\n{}\n", format!("{:?}", self.memory));
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use pretty_assertions::assert_eq;
+
+    #[test]
+    fn test_load_font_data() {
+        let emulator = Emulator::new();
+        assert_eq!(emulator.memory[0xf0..0xf0 + 80], FONT_SPRITES)
+    }
+
+    #[test]
+    fn test_load_rom_ibm_logo() {
+        // Setup
+        let mut file = File::open("roms/ibm-logo.ch8").expect("Failed to test open ROM");
+        let mut rom_file_data: [u8; 132] = [0; 132];
+        file.read(&mut rom_file_data)
+            .expect("Failed to read test ROM");
+
+        // Test
+        let mut emulator = Emulator::new();
+        emulator
+            .load_rom("roms/ibm-logo.ch8")
+            .expect("failed to load ROM");
+
+        // Assert
+        assert_eq!(emulator.memory[0x200..0x200 + 132], rom_file_data)
     }
 }
