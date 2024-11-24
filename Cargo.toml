@@ -3,6 +3,9 @@ name = "Chip8Emulator"
 version = "0.1.0"
 edition = "2021"
 
+[lints.rust]
+dead_code = "allow"
+
 [dependencies]
 log = "0.4.22"
 env_logger = "0.11.5"

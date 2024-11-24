@@ -2,7 +2,8 @@ use anyhow::anyhow;
 use log::{debug, info};
 use std::fs::File;
 use std::io::Read;
-use std::path::Path;
+use std::path::{Path};
+use crate::display::{Display, TerminalDisplay};
 
 const MEMORY_SIZE: usize = 4096;
 const NUMBER_OF_REGISTERS: usize = 16;
@@ -42,15 +43,18 @@ pub struct Emulator {
     sound_timer: u8,
     /// The stack pointer register.
     stack_pointer: u8,
+    /// The display_data holds all the data associated with the display
+    display: Box<dyn Display>
 }
 
 impl Emulator {
     /// Creates a new `Emulator` instance.
     ///
-    pub fn new() -> Emulator {
+    pub fn new(display: Box<dyn Display>) -> Emulator {
         let mut emulator = Emulator {
-            memory: [0; 4096],
-            registers: [0; 16],
+            memory: [0; MEMORY_SIZE],
+            registers: [0; NUMBER_OF_REGISTERS],
+            display,
             index_register: 0,
             program_counter: 0,
             delay_timer: 0,
@@ -113,7 +117,7 @@ mod tests {
 
     #[test]
     fn test_load_font_data() {
-        let emulator = Emulator::new();
+        let emulator = Emulator::new(Box::from(TerminalDisplay::new()));
         assert_eq!(emulator.memory[0xf0..0xf0 + 80], FONT_SPRITES)
     }
 
@@ -126,7 +130,7 @@ mod tests {
             .expect("Failed to read test ROM");
 
         // Test
-        let mut emulator = Emulator::new();
+        let mut emulator = Emulator::new(Box::from(TerminalDisplay::new()));
         emulator
             .load_rom("roms/ibm-logo.ch8")
             .expect("failed to load ROM");
