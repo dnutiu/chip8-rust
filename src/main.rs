@@ -8,7 +8,7 @@ mod display;
 fn main() -> Result<(), anyhow::Error> {
     env_logger::init();
 
-    let mut emulator = Emulator::new(Box::from(TerminalDisplay::new()));
+    let mut emulator = Emulator::new(TerminalDisplay::new());
 
     emulator.emulate(String::from("./roms/ibm-logo.ch8"))?;
 

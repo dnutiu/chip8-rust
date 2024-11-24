@@ -3,7 +3,7 @@ use log::{debug, info};
 use std::fs::File;
 use std::io::Read;
 use std::path::{Path};
-use crate::display::{Display, TerminalDisplay};
+use crate::display::{Display};
 
 const MEMORY_SIZE: usize = 4096;
 const NUMBER_OF_REGISTERS: usize = 16;
@@ -27,7 +27,7 @@ const FONT_SPRITES: [u8; 80] = [
 ];
 
 /// Emulator emulates the Chip8 CPU.
-pub struct Emulator {
+pub struct Emulator<D> where D: Display {
     /// Memory represents the emulator's memory.
     memory: [u8; MEMORY_SIZE],
     /// Registers holds the general purpose registers.
@@ -44,13 +44,13 @@ pub struct Emulator {
     /// The stack pointer register.
     stack_pointer: u8,
     /// The display_data holds all the data associated with the display
-    display: Box<dyn Display>
+    display: D
 }
 
-impl Emulator {
+impl <D> Emulator<D> where D: Display {
     /// Creates a new `Emulator` instance.
     ///
-    pub fn new(display: Box<dyn Display>) -> Emulator {
+    pub fn new(display: D) -> Emulator<D> {
         let mut emulator = Emulator {
             memory: [0; MEMORY_SIZE],
             registers: [0; NUMBER_OF_REGISTERS],
@@ -113,11 +113,12 @@ impl Emulator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::display::{TerminalDisplay};
     use pretty_assertions::assert_eq;
 
     #[test]
     fn test_load_font_data() {
-        let emulator = Emulator::new(Box::from(TerminalDisplay::new()));
+        let emulator = Emulator::new(TerminalDisplay::new());
         assert_eq!(emulator.memory[0xf0..0xf0 + 80], FONT_SPRITES)
     }
 
@@ -130,7 +131,7 @@ mod tests {
             .expect("Failed to read test ROM");
 
         // Test
-        let mut emulator = Emulator::new(Box::from(TerminalDisplay::new()));
+        let mut emulator = Emulator::new(TerminalDisplay::new());
         emulator
             .load_rom("roms/ibm-logo.ch8")
             .expect("failed to load ROM");
