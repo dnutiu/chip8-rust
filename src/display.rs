@@ -1,4 +1,3 @@
-
 /// Represents the display's width in pixels.
 const DISPLAY_WIDTH: usize = 64;
 
@@ -22,7 +21,7 @@ pub struct TerminalDisplay {
 impl TerminalDisplay {
     pub fn new() -> TerminalDisplay {
         TerminalDisplay {
-            display_data: [false; DISPLAY_WIDTH * DISPLAY_HEIGHT]
+            display_data: [false; DISPLAY_WIDTH * DISPLAY_HEIGHT],
         }
     }
 }

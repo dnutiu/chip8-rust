@@ -1,9 +1,10 @@
+use crate::display::TerminalDisplay;
 use crate::emulator::Emulator;
 use env_logger;
-use crate::display::TerminalDisplay;
 
-mod emulator;
 mod display;
+mod emulator;
+mod stack;
 
 fn main() -> Result<(), anyhow::Error> {
     env_logger::init();

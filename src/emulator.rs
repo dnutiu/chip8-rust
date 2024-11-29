@@ -1,9 +1,10 @@
+use crate::display::Display;
+use crate::stack::Stack;
 use anyhow::anyhow;
 use log::{debug, info};
 use std::fs::File;
 use std::io::Read;
-use std::path::{Path};
-use crate::display::{Display};
+use std::path::Path;
 
 const MEMORY_SIZE: usize = 4096;
 const NUMBER_OF_REGISTERS: usize = 16;
@@ -27,7 +28,10 @@ const FONT_SPRITES: [u8; 80] = [
 ];
 
 /// Emulator emulates the Chip8 CPU.
-pub struct Emulator<D> where D: Display {
+pub struct Emulator<D>
+where
+    D: Display,
+{
     /// Memory represents the emulator's memory.
     memory: [u8; MEMORY_SIZE],
     /// Registers holds the general purpose registers.
@@ -44,10 +48,14 @@ pub struct Emulator<D> where D: Display {
     /// The stack pointer register.
     stack_pointer: u8,
     /// The display_data holds all the data associated with the display
-    display: D
+    display: D,
+    stack: Stack<u16>,
 }
 
-impl <D> Emulator<D> where D: Display {
+impl<D> Emulator<D>
+where
+    D: Display,
+{
     /// Creates a new `Emulator` instance.
     ///
     pub fn new(display: D) -> Emulator<D> {
@@ -60,6 +68,7 @@ impl <D> Emulator<D> where D: Display {
             delay_timer: 0,
             sound_timer: 0,
             stack_pointer: 0,
+            stack: Stack::new(),
         };
 
         emulator.load_font_data();
@@ -113,7 +122,7 @@ impl <D> Emulator<D> where D: Display {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::display::{TerminalDisplay};
+    use crate::display::TerminalDisplay;
     use pretty_assertions::assert_eq;
 
     #[test]
