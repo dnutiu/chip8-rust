@@ -13,10 +13,15 @@ impl Instruction {
             data: (data[0] as u16) << 8u8 | (data[1] as u16),
         }
     }
+
+    /// raw returns the raw instruction data.
+    pub fn raw(&self) -> u16 {
+        self.data
+    }
 }
 
 impl Display for Instruction {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(&format!(
             "Instruction: [{:02x}, {:02x}]",
             ((self.data & 0xFF00) >> 8u8) as u8,
