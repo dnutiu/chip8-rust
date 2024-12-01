@@ -1,4 +1,5 @@
 use crate::display::Display;
+use crate::instruction::Instruction;
 use crate::stack::Stack;
 use anyhow::anyhow;
 use log::{debug, info};
@@ -92,8 +93,35 @@ where
         T: AsRef<Path> + std::fmt::Display,
     {
         self.load_rom(path)?;
-
+        self.emulation_loop::<T>()?;
         Ok(())
+    }
+
+    /// Emulation loop executes the fetch -> decode -> execute pipeline
+    fn emulation_loop<T>(&mut self) -> Result<(), anyhow::Error> {
+        loop {
+            // fetch instruction
+            let instruction = self.fetch_instruction();
+            self.program_counter += 2;
+
+            // decode opcode
+            // let decode = self.decode_instruction(instruction);
+
+            // execute
+        }
+        Ok(())
+    }
+
+    /// Fetches the current instruction from the memory without incrementing the program counter.
+    fn fetch_instruction(&self) -> Instruction {
+        Instruction::new([
+            self.memory[self.program_counter as usize],
+            self.memory[self.program_counter as usize + 1],
+        ])
+    }
+
+    fn decode_instruction(&mut self, _instruction: Instruction) -> Result<(), anyhow::Error> {
+        todo!("must implement");
     }
 
     /// Loads the ROM found at the rom path in the emulator's RAM memory.
@@ -113,6 +141,9 @@ where
             ));
         }
         file.read(&mut self.memory[0x200..])?;
+
+        // Set program counter to start of memory
+        self.program_counter = 0x200;
 
         debug!("Memory:\n{}\n", format!("{:?}", self.memory));
         Ok(())

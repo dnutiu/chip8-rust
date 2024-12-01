@@ -4,6 +4,7 @@ use env_logger;
 
 mod display;
 mod emulator;
+mod instruction;
 mod stack;
 
 fn main() -> Result<(), anyhow::Error> {
