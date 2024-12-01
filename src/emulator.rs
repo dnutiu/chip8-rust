@@ -101,11 +101,13 @@ where
     fn emulation_loop<T>(&mut self) -> Result<(), anyhow::Error> {
         loop {
             // fetch instruction
-            let instruction = self.fetch_instruction();
+            let instruction = self.fetch_instruction()?;
             self.program_counter += 2;
 
-            // decode opcode
-            // let decode = self.decode_instruction(instruction);
+            debug!("PC={} {:04x}", self.program_counter, instruction)
+
+            // decode & execute
+            //let decode = self.decode_instruction(instruction);
 
             // execute
         }
@@ -113,11 +115,15 @@ where
     }
 
     /// Fetches the current instruction from the memory without incrementing the program counter.
-    fn fetch_instruction(&self) -> Instruction {
-        Instruction::new([
+    fn fetch_instruction(&self) -> Result<Instruction, anyhow::Error> {
+        if self.program_counter as usize >= self.memory.len() {
+            return Err(anyhow!("program_counter is out of range"));
+        }
+
+        Ok(Instruction::new([
             self.memory[self.program_counter as usize],
             self.memory[self.program_counter as usize + 1],
-        ])
+        ]))
     }
 
     fn decode_instruction(&mut self, _instruction: Instruction) -> Result<(), anyhow::Error> {
