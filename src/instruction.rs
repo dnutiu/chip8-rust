@@ -1,4 +1,5 @@
-use std::fmt::{Display, Formatter, Write};
+use std::fmt;
+use std::fmt::{Display, Formatter, LowerHex};
 
 #[derive(Debug)]
 pub struct Instruction {
@@ -9,7 +10,7 @@ impl Instruction {
     /// Creates a new instruction instance.
     pub(crate) fn new(data: [u8; 2]) -> Self {
         Instruction {
-            data: (data[1] as u16) << 8u8 | (data[0] as u16),
+            data: (data[0] as u16) << 8u8 | (data[1] as u16),
         }
     }
 }
