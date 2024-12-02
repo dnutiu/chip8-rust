@@ -83,8 +83,7 @@ where
             .iter()
             .enumerate()
             .for_each(|i| self.memory[0xf0 + i.0] = *i.1);
-        info!("Loaded font data...");
-        debug!("Memory:\n{}\n", format!("{:?}", self.memory))
+        info!("Loaded font data into memory at 0xf0.");
     }
 
     /// Emulates the ROM specified at `path`.
@@ -150,8 +149,6 @@ where
 
         // Set program counter to start of memory
         self.program_counter = 0x200;
-
-        debug!("Memory:\n{}\n", format!("{:?}", self.memory));
         Ok(())
     }
 }
