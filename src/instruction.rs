@@ -23,7 +23,7 @@ impl Instruction {
 impl Display for Instruction {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(&format!(
-            "Instruction: [{:02x}, {:02x}]",
+            "<Instruction: [{:02x}{:02x}]>",
             ((self.data & 0xFF00) >> 8u8) as u8,
             (self.data & 0x00FF) as u8
         ))

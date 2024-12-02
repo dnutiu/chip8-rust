@@ -7,7 +7,7 @@ const DISPLAY_HEIGHT: usize = 32;
 /// Display trait
 pub trait Display {
     /// Re-draws the display.
-    fn redraw(&self);
+    fn clear(&self);
     /// Draws the display.
     fn draw(&mut self);
 }
@@ -28,7 +28,7 @@ impl TerminalDisplay {
 
 impl Display for TerminalDisplay {
     /// Re-draws the display.
-    fn redraw(&self) {
+    fn clear(&self) {
         // ANSI Escape code to move cursor to row 1 column 1
         // See https://stackoverflow.com/a/4062051
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);

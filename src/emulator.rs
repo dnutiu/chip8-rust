@@ -2,7 +2,7 @@ use crate::display::Display;
 use crate::instruction::Instruction;
 use crate::stack::Stack;
 use anyhow::anyhow;
-use log::{debug, info};
+use log::{debug, info, warn};
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -103,12 +103,29 @@ where
             let instruction = self.fetch_instruction()?;
             self.program_counter += 2;
 
-            debug!("PC={} {:04x}", self.program_counter, instruction)
+            debug!("PC={} {:04x}", self.program_counter, instruction);
 
             // decode & execute
-            //let decode = self.decode_instruction(instruction);
+            self.execute_instruction(instruction)?;
+        }
+        Ok(())
+    }
 
-            // execute
+    fn execute_instruction(&mut self, instruction: Instruction) -> Result<(), anyhow::Error> {
+        match instruction.raw() {
+            // Clear Display
+            0x00E0 => {
+                info!("clear display");
+                self.display.clear()
+            }
+            // Jump
+            0x1000..=0x1FFF => {
+                info!("jump to {}", instruction);
+            }
+            // Unknown instruction
+            _ => {
+                warn!("Unknown instruction: {:04x}, skipping.", instruction);
+            }
         }
         Ok(())
     }
