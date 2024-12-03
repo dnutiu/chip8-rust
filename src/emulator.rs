@@ -1,5 +1,5 @@
 use crate::display::Display;
-use crate::instruction::Instruction;
+use crate::instruction::{Instruction, ProcessorInstruction};
 use crate::stack::Stack;
 use anyhow::anyhow;
 use log::{debug, info, warn};
@@ -112,18 +112,15 @@ where
     }
 
     fn execute_instruction(&mut self, instruction: Instruction) -> Result<(), anyhow::Error> {
-        match instruction.raw() {
-            // Clear Display
-            0x00E0 => {
+        match instruction.processor_instruction() {
+            ProcessorInstruction::ClearScreen => {
                 info!("clear display");
                 self.display.clear()
             }
-            // Jump
-            0x1000..=0x1FFF => {
-                info!("jump to {}", instruction);
+            ProcessorInstruction::Jump(address) => {
+                todo!("implement jump")
             }
-            // Unknown instruction
-            _ => {
+            ProcessorInstruction::UnknownInstruction => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);
             }
         }
@@ -140,10 +137,6 @@ where
             self.memory[self.program_counter as usize],
             self.memory[self.program_counter as usize + 1],
         ]))
-    }
-
-    fn decode_instruction(&mut self, _instruction: Instruction) -> Result<(), anyhow::Error> {
-        todo!("must implement");
     }
 
     /// Loads the ROM found at the rom path in the emulator's RAM memory.
