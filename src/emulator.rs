@@ -2,7 +2,7 @@ use crate::display::Display;
 use crate::instruction::{Instruction, ProcessorInstruction};
 use crate::stack::Stack;
 use anyhow::anyhow;
-use log::{debug, info, warn};
+use log::{debug, info, trace, warn};
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -98,12 +98,17 @@ where
 
     /// Emulation loop executes the fetch -> decode -> execute pipeline
     fn emulation_loop<T>(&mut self) -> Result<(), anyhow::Error> {
+        let mut last_program_counter = self.program_counter;
         loop {
             // fetch instruction
             let instruction = self.fetch_instruction()?;
             self.program_counter += 2;
 
-            debug!("PC={} {:04x}", self.program_counter, instruction);
+            if last_program_counter != self.program_counter {
+                debug!("PC={} {:04x}", self.program_counter, instruction);
+            }
+            last_program_counter = self.program_counter;
+
 
             // decode & execute
             self.execute_instruction(instruction)?;
@@ -114,11 +119,20 @@ where
     fn execute_instruction(&mut self, instruction: Instruction) -> Result<(), anyhow::Error> {
         match instruction.processor_instruction() {
             ProcessorInstruction::ClearScreen => {
-                info!("clear display");
+                trace!("Clear display");
                 self.display.clear()
             }
             ProcessorInstruction::Jump(address) => {
-                todo!("implement jump")
+                trace!("Jump to address {:04x}", address);
+                self.program_counter = address
+            }
+            ProcessorInstruction::SetRegister(register, data) => {
+                trace!("Set register {} to data {:04x}", register, data);
+                self.registers[register] = data
+            }
+            ProcessorInstruction::AddValueToRegister(register, data) => {
+                trace!("Add to register {} data {:04x}", register, data);
+                self.registers[register] += data
             }
             ProcessorInstruction::UnknownInstruction => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);

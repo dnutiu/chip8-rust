@@ -1,5 +1,17 @@
 use std::fmt;
 use std::fmt::{Display, Formatter, LowerHex};
+use log::info;
+/*
+Although every instruction will have a first nibble that tells you what kind of instruction it is,
+the rest of the nibbles will have different meanings. To differentiate these meanings,
+we usually call them different things, but all of them can be any hexadecimal number from 0 to F:
+
+    X: The second nibble. Used to look up one of the 16 registers (VX) from V0 through VF.
+    Y: The third nibble. Also used to look up one of the 16 registers (VY) from V0 through VF.
+    N: The fourth nibble. A 4-bit number.
+    NN: The second byte (third and fourth nibbles). An 8-bit immediate number.
+    NNN: The second, third and fourth nibbles. A 12-bit immediate memory address.
+ */
 
 #[derive(Debug, Clone, Copy)]
 pub enum ProcessorInstruction {
@@ -7,6 +19,10 @@ pub enum ProcessorInstruction {
     ClearScreen,
     /// Jumps to a given address
     Jump(u16),
+    /// Sets the register in the first argument to the given value
+    SetRegister(usize, u8),
+    /// Adds the value to the register
+    AddValueToRegister(usize, u8),
     UnknownInstruction
 }
 
@@ -44,7 +60,17 @@ impl Instruction {
             }
             // Jump
             0x1000..=0x1FFF => {
-                ProcessorInstruction::Jump(data & 0xFFF)
+                // 1NNN
+                ProcessorInstruction::Jump(Self::grab_inner_data(data))
+            }
+            // Set Register
+            0x6000..=0x6FFF => {
+                // 6XNN
+                ProcessorInstruction::SetRegister(Self::grab_first_nibble(data), Self::grab_last_byte(data))
+            }
+            0x7000..0x7FFF => {
+                // 7XNN
+                ProcessorInstruction::AddValueToRegister(Self::grab_first_nibble(data), Self::grab_last_byte(data))
             }
             // Unknown instruction
             _ => {
@@ -53,7 +79,20 @@ impl Instruction {
         }
     }
 
+    /// Grabs the inner data from the data, ignores the opcode.
+    fn grab_inner_data(data: u16) -> u16 {
+        data & 0x0FFF
+    }
 
+    /// Grabs the last byte from the data.
+    fn grab_last_byte(data: u16) -> u8 {
+        (data & 0x00FF) as u8
+    }
+
+    /// Grabs the first nibble from the data.
+    fn grab_first_nibble(data: u16) -> usize {
+        ((data & 0x0F00) >> 8) as usize
+    }
 }
 
 impl Display for Instruction {
