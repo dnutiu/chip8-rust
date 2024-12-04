@@ -6,6 +6,7 @@ use log::{debug, info, trace, warn};
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+use std::{thread, time};
 
 const MEMORY_SIZE: usize = 4096;
 const NUMBER_OF_REGISTERS: usize = 16;
@@ -111,8 +112,10 @@ where
 
             // decode & execute
             self.execute_instruction(instruction)?;
+
+            // insert some delay
+            thread::sleep(time::Duration::from_millis(50));
         }
-        Ok(())
     }
 
     fn execute_instruction(&mut self, instruction: Instruction) -> Result<(), anyhow::Error> {
@@ -134,7 +137,11 @@ where
                 self.registers[register as usize] += data
             }
             ProcessorInstruction::Draw(vx_register, vy_register, pixels) => {
-                trace!("Draw vx_register={vx_register} vy_register={vy_register} pixels={pixels}")
+                trace!("Draw vx_register={vx_register} vy_register={vy_register} pixels={pixels}");
+                let x_coordinate = self.registers[vx_register as usize] & 63;
+                let y_coordinate = self.registers[vy_register as usize] & 31;
+                self.registers[0xF] = 0;
+                self.display.draw(x_coordinate, y_coordinate, pixels);
             }
             ProcessorInstruction::UnknownInstruction => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);

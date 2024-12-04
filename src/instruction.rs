@@ -1,4 +1,3 @@
-use log::info;
 use std::fmt;
 use std::fmt::{Display, Formatter, LowerHex};
 /*
@@ -80,7 +79,11 @@ impl Instruction {
             }
             0xD000..=0xDFFF => {
                 // DXYN
-                ProcessorInstruction::Draw(Self::grab_first_nibble(data), Self::grab_middle_nibble(data), Self::grab_last_nibble(data))
+                ProcessorInstruction::Draw(
+                    Self::grab_first_nibble(data),
+                    Self::grab_middle_nibble(data),
+                    Self::grab_last_nibble(data),
+                )
             }
             // Unknown instruction
             _ => ProcessorInstruction::UnknownInstruction,

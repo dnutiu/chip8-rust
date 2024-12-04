@@ -10,6 +10,8 @@ pub trait Display {
     fn clear(&self);
     /// Renders the display data on screen.
     fn render(&mut self);
+    /// Draws the pixels at x and y coordinates
+    fn draw(&mut self, x: u8, y: u8, pixels: u8) -> bool;
 }
 
 /// Display models the Chip8's display.
@@ -45,5 +47,16 @@ impl Display for TerminalDisplay {
             }
             print!("\n")
         }
+    }
+
+    /// Draws the pixels at x and y coordinates
+    fn draw(&mut self, x: u8, y: u8, pixels: u8) -> bool {
+        let row = y as usize;
+        let column = x as usize;
+        for pixel in 0..=pixels {
+            self.display_data[row * DISPLAY_WIDTH + column + pixel as usize] = true;
+        }
+        self.render();
+        true
     }
 }
