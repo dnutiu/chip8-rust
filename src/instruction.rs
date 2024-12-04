@@ -1,6 +1,6 @@
+use log::info;
 use std::fmt;
 use std::fmt::{Display, Formatter, LowerHex};
-use log::info;
 /*
 Although every instruction will have a first nibble that tells you what kind of instruction it is,
 the rest of the nibbles will have different meanings. To differentiate these meanings,
@@ -20,16 +20,18 @@ pub enum ProcessorInstruction {
     /// Jumps to a given address
     Jump(u16),
     /// Sets the register in the first argument to the given value
-    SetRegister(usize, u8),
+    SetRegister(u8, u8),
     /// Adds the value to the register
-    AddValueToRegister(usize, u8),
-    UnknownInstruction
+    AddValueToRegister(u8, u8),
+    /// Draws to the screen.
+    Draw(u8, u8, u8),
+    UnknownInstruction,
 }
 
 #[derive(Debug)]
 pub struct Instruction {
     data: u16,
-    processor_instruction: ProcessorInstruction
+    processor_instruction: ProcessorInstruction,
 }
 
 impl Instruction {
@@ -55,9 +57,7 @@ impl Instruction {
     fn decode_instruction(data: u16) -> ProcessorInstruction {
         match data {
             // Clear Display
-            0x00E0 => {
-                ProcessorInstruction::ClearScreen
-            }
+            0x00E0 => ProcessorInstruction::ClearScreen,
             // Jump
             0x1000..=0x1FFF => {
                 // 1NNN
@@ -66,16 +66,24 @@ impl Instruction {
             // Set Register
             0x6000..=0x6FFF => {
                 // 6XNN
-                ProcessorInstruction::SetRegister(Self::grab_first_nibble(data), Self::grab_last_byte(data))
+                ProcessorInstruction::SetRegister(
+                    Self::grab_first_nibble(data),
+                    Self::grab_last_byte(data),
+                )
             }
-            0x7000..0x7FFF => {
+            0x7000..=0x7FFF => {
                 // 7XNN
-                ProcessorInstruction::AddValueToRegister(Self::grab_first_nibble(data), Self::grab_last_byte(data))
+                ProcessorInstruction::AddValueToRegister(
+                    Self::grab_first_nibble(data),
+                    Self::grab_last_byte(data),
+                )
+            }
+            0xD000..=0xDFFF => {
+                // DXYN
+                ProcessorInstruction::Draw(Self::grab_first_nibble(data), Self::grab_middle_nibble(data), Self::grab_last_nibble(data))
             }
             // Unknown instruction
-            _ => {
-                ProcessorInstruction::UnknownInstruction
-            }
+            _ => ProcessorInstruction::UnknownInstruction,
         }
     }
 
@@ -90,8 +98,18 @@ impl Instruction {
     }
 
     /// Grabs the first nibble from the data.
-    fn grab_first_nibble(data: u16) -> usize {
-        ((data & 0x0F00) >> 8) as usize
+    fn grab_first_nibble(data: u16) -> u8 {
+        ((data & 0x0F00) >> 8) as u8
+    }
+
+    /// Grabs the middle nibble from the data.
+    fn grab_middle_nibble(data: u16) -> u8 {
+        ((data & 0x00F0) >> 4) as u8
+    }
+
+    /// Grabs the last nibble from the data.
+    fn grab_last_nibble(data: u16) -> u8 {
+        (data & 0x000F) as u8
     }
 }
 

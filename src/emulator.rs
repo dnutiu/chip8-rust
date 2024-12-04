@@ -109,7 +109,6 @@ where
             }
             last_program_counter = self.program_counter;
 
-
             // decode & execute
             self.execute_instruction(instruction)?;
         }
@@ -128,11 +127,14 @@ where
             }
             ProcessorInstruction::SetRegister(register, data) => {
                 trace!("Set register {} to data {:04x}", register, data);
-                self.registers[register] = data
+                self.registers[register as usize] = data
             }
             ProcessorInstruction::AddValueToRegister(register, data) => {
                 trace!("Add to register {} data {:04x}", register, data);
-                self.registers[register] += data
+                self.registers[register as usize] += data
+            }
+            ProcessorInstruction::Draw(vx_register, vy_register, pixels) => {
+                trace!("Draw vx_register={vx_register} vy_register={vy_register} pixels={pixels}")
             }
             ProcessorInstruction::UnknownInstruction => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);

@@ -8,8 +8,8 @@ const DISPLAY_HEIGHT: usize = 32;
 pub trait Display {
     /// Re-draws the display.
     fn clear(&self);
-    /// Draws the display.
-    fn draw(&mut self);
+    /// Renders the display data on screen.
+    fn render(&mut self);
 }
 
 /// Display models the Chip8's display.
@@ -33,8 +33,8 @@ impl Display for TerminalDisplay {
         // See https://stackoverflow.com/a/4062051
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
     }
-    /// Draws the display.
-    fn draw(&mut self) {
+    /// Renders the display data on screen.
+    fn render(&mut self) {
         for row in 0..32 {
             for column in 0..64 {
                 if self.display_data[row * DISPLAY_WIDTH + column] {
