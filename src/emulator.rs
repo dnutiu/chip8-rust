@@ -8,6 +8,12 @@ use std::io::Read;
 use std::path::Path;
 use std::{thread, time};
 
+/// Represents the display's width in pixels.
+const DISPLAY_WIDTH: usize = 64;
+
+/// Represents the display's height pixels.
+const DISPLAY_HEIGHT: usize = 32;
+
 const MEMORY_SIZE: usize = 4096;
 const NUMBER_OF_REGISTERS: usize = 16;
 const FONT_SPRITES: [u8; 80] = [
@@ -51,7 +57,10 @@ where
     stack_pointer: u8,
     /// The display_data holds all the data associated with the display
     display: D,
+    /// The stack of the emulator.
     stack: Stack<u16>,
+    /// Holds the display data, each bit corresponds to a pixel.
+    display_data: [bool; DISPLAY_WIDTH * DISPLAY_HEIGHT],
 }
 
 impl<D> Emulator<D>
@@ -71,6 +80,7 @@ where
             sound_timer: 0,
             stack_pointer: 0,
             stack: Stack::new(),
+            display_data: [false; DISPLAY_WIDTH * DISPLAY_HEIGHT],
         };
 
         emulator.load_font_data();
@@ -136,12 +146,43 @@ where
                 trace!("Add to register {} data {:04x}", register, data);
                 self.registers[register as usize] += data
             }
-            ProcessorInstruction::Draw(vx_register, vy_register, pixels) => {
-                trace!("Draw vx_register={vx_register} vy_register={vy_register} pixels={pixels}");
-                let x_coordinate = self.registers[vx_register as usize] & 63;
-                let y_coordinate = self.registers[vy_register as usize] & 31;
-                self.registers[0xF] = 0;
-                self.display.draw(x_coordinate, y_coordinate, pixels);
+            ProcessorInstruction::Draw(vx_register, vy_register, num_rows) => {
+                trace!("Draw vx_register={vx_register} vy_register={vy_register} pixels={num_rows}");
+                let x_coordinate = self.registers[vx_register as usize];
+                let y_coordinate = self.registers[vy_register as usize];
+
+                // Keep track if any pixels were flipped
+                let mut flipped = false;
+
+                // Iterate over each row of our sprite
+                for y_line in 0..num_rows {
+                    // Determine which memory address our row's data is stored
+                    let addr = self.index_register + y_line as u16;
+                    let pixels = self.memory[0xf0 + addr as usize];
+                    // Iterate over each column in our row
+                    for x_line in 0..8 {
+                        // Use a mask to fetch current pixel's bit. Only flip if a 1
+                        if (pixels & (0b1000_0000 >> x_line)) != 0 {
+                            // Sprites should wrap around screen, so apply modulo
+                            let x = (x_coordinate + x_line) as usize % DISPLAY_WIDTH;
+                            let y = (y_coordinate + y_line) as usize % DISPLAY_HEIGHT;
+
+                            // Get our pixel's index for our 1D screen array
+                            let index = x + DISPLAY_WIDTH * y;
+                            // Check if we're about to flip the pixel and set
+                            flipped |= self.display_data[index];
+                            self.display_data[index] ^= true;
+                        }
+                    }
+                }
+
+                if flipped {
+                    self.registers[0xF] = 1;
+                } else {
+                    self.registers[0xF] = 0;
+                }
+
+                self.display.render(&self.display_data);
             }
             ProcessorInstruction::UnknownInstruction => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);

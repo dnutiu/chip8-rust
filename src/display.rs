@@ -9,22 +9,16 @@ pub trait Display {
     /// Re-draws the display.
     fn clear(&self);
     /// Renders the display data on screen.
-    fn render(&mut self);
-    /// Draws the pixels at x and y coordinates
-    fn draw(&mut self, x: u8, y: u8, pixels: u8) -> bool;
+    fn render(&mut self, display_data: &[bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]);
 }
 
 /// Display models the Chip8's display.
 pub struct TerminalDisplay {
-    /// Holds the display data, each bit corresponds to a pixel.
-    display_data: [bool; DISPLAY_WIDTH * DISPLAY_HEIGHT],
 }
 
 impl TerminalDisplay {
     pub fn new() -> TerminalDisplay {
-        TerminalDisplay {
-            display_data: [false; DISPLAY_WIDTH * DISPLAY_HEIGHT],
-        }
+        TerminalDisplay {}
     }
 }
 
@@ -36,27 +30,16 @@ impl Display for TerminalDisplay {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
     }
     /// Renders the display data on screen.
-    fn render(&mut self) {
+    fn render(&mut self, display_data: &[bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]) {
         for row in 0..32 {
             for column in 0..64 {
-                if self.display_data[row * DISPLAY_WIDTH + column] {
-                    print!("█")
+                if display_data[row * DISPLAY_WIDTH + column] {
+                    print!("#")
                 } else {
                     print!(" ")
                 }
             }
             print!("\n")
         }
-    }
-
-    /// Draws the pixels at x and y coordinates
-    fn draw(&mut self, x: u8, y: u8, pixels: u8) -> bool {
-        let row = y as usize;
-        let column = x as usize;
-        for pixel in 0..=pixels {
-            self.display_data[row * DISPLAY_WIDTH + column + pixel as usize] = true;
-        }
-        self.render();
-        true
     }
 }
