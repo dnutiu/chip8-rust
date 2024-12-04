@@ -54,30 +54,34 @@ impl Instruction {
 
     /// Decodes the raw instruction data into a processor instruction.
     fn decode_instruction(data: u16) -> ProcessorInstruction {
-        match data {
+        let digit1 = Self::grab_zeroth_nibble(data);
+        let digit2 = Self::grab_first_nibble(data);
+        let digit3 = Self::grab_middle_nibble(data);
+        let digit4 = Self::grab_first_nibble(data);
+        match (digit1, digit2, digit3, digit4) {
             // Clear Display
-            0x00E0 => ProcessorInstruction::ClearScreen,
+            (0, 0, 0xE, 0) => ProcessorInstruction::ClearScreen,
             // Jump
-            0x1000..=0x1FFF => {
+            (0x1, _, _, _) => {
                 // 1NNN
                 ProcessorInstruction::Jump(Self::grab_inner_data(data))
             }
             // Set Register
-            0x6000..=0x6FFF => {
+            (0x6, _, _, _) => {
                 // 6XNN
                 ProcessorInstruction::SetRegister(
                     Self::grab_first_nibble(data),
                     Self::grab_last_byte(data),
                 )
             }
-            0x7000..=0x7FFF => {
+            (0x7, _, _, _) => {
                 // 7XNN
                 ProcessorInstruction::AddValueToRegister(
                     Self::grab_first_nibble(data),
                     Self::grab_last_byte(data),
                 )
             }
-            0xD000..=0xDFFF => {
+            (0xD, _, _, _) => {
                 // DXYN
                 ProcessorInstruction::Draw(
                     Self::grab_first_nibble(data),
@@ -99,6 +103,12 @@ impl Instruction {
     fn grab_last_byte(data: u16) -> u8 {
         (data & 0x00FF) as u8
     }
+
+    /// Grabs the zeroth nibble from the data.
+    fn grab_zeroth_nibble(data: u16) -> u8 {
+        ((data & 0xF000) >> 12) as u8
+    }
+
 
     /// Grabs the first nibble from the data.
     fn grab_first_nibble(data: u16) -> u8 {
