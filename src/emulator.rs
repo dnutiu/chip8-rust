@@ -146,6 +146,10 @@ where
                 trace!("Add to register {} data {:04x}", register, data);
                 self.registers[register as usize] += data
             }
+            ProcessorInstruction::SetIndexRegister(data) => {
+                trace!("Set index register to data {:04x}", data);
+                self.index_register = data;
+            },
             ProcessorInstruction::Draw(vx_register, vy_register, num_rows) => {
                 trace!("Draw vx_register={vx_register} vy_register={vy_register} pixels={num_rows}");
                 let x_coordinate = self.registers[vx_register as usize];
@@ -158,7 +162,7 @@ where
                 for y_line in 0..num_rows {
                     // Determine which memory address our row's data is stored
                     let addr = self.index_register + y_line as u16;
-                    let pixels = self.memory[0xf0 + addr as usize];
+                    let pixels = self.memory[addr as usize];
                     // Iterate over each column in our row
                     for x_line in 0..8 {
                         // Use a mask to fetch current pixel's bit. Only flip if a 1

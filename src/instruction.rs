@@ -22,8 +22,11 @@ pub enum ProcessorInstruction {
     SetRegister(u8, u8),
     /// Adds the value to the register
     AddValueToRegister(u8, u8),
+    /// Sets the index register
+    SetIndexRegister(u16),
     /// Draws to the screen.
     Draw(u8, u8, u8),
+    /// Unknown instruction
     UnknownInstruction,
 }
 
@@ -74,6 +77,7 @@ impl Instruction {
                     Self::grab_last_byte(data),
                 )
             }
+            // Add value to register
             (0x7, _, _, _) => {
                 // 7XNN
                 ProcessorInstruction::AddValueToRegister(
@@ -81,6 +85,11 @@ impl Instruction {
                     Self::grab_last_byte(data),
                 )
             }
+            // Set index register
+            (0xA, _, _, _) => {
+                ProcessorInstruction::SetIndexRegister(Self::grab_inner_data(data))
+            },
+            // Draw on screen
             (0xD, _, _, _) => {
                 // DXYN
                 ProcessorInstruction::Draw(
