@@ -1,8 +1,8 @@
-use ratatui::DefaultTerminal;
-use ratatui::style::{Color, Style};
+use ratatui::style::Color;
 use ratatui::symbols::Marker;
-use ratatui::widgets::{Block, Borders, Paragraph};
 use ratatui::widgets::canvas::Canvas;
+use ratatui::widgets::{Block, Borders};
+use ratatui::DefaultTerminal;
 
 /// Represents the display's width in pixels.
 const DISPLAY_WIDTH: usize = 64;
@@ -19,8 +19,7 @@ pub trait Display {
 }
 
 /// Simple terminal display for the Chip8's emulator.
-pub struct TerminalDisplay {
-}
+pub struct TerminalDisplay {}
 
 impl TerminalDisplay {
     pub fn new() -> TerminalDisplay {
@@ -52,13 +51,13 @@ impl Display for TerminalDisplay {
 
 /// Ratatui based TUI display.
 pub struct RatatuiDisplay {
-    terminal: DefaultTerminal
+    terminal: DefaultTerminal,
 }
 
 impl RatatuiDisplay {
     pub fn new() -> RatatuiDisplay {
         RatatuiDisplay {
-            terminal:  ratatui::init()
+            terminal: ratatui::init(),
         }
     }
 }
@@ -69,32 +68,36 @@ impl Display for RatatuiDisplay {
     }
 
     fn render(&mut self, display_data: &[bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]) {
-        self.terminal.draw(|frame| {
-            let canvas = Canvas::default()
-                .block(Block::default().title("Chip8 Emulator by nuculabs.dev").borders(Borders::ALL))
-                .marker(Marker::Bar)
-                .paint(|ctx| {
-                    for row in 0..DISPLAY_HEIGHT {
-                        for column in 0..DISPLAY_WIDTH {
-                            if display_data[row * DISPLAY_WIDTH + column] {
-                                ctx.draw(&ratatui::widgets::canvas::Rectangle {
-                                    x: column as f64,
-                                    y: DISPLAY_HEIGHT as f64 - row as f64,
-                                    width: 1.0,
-                                    height: 1.0,
-                                    color: Color::White,
-                                });
+        self.terminal
+            .draw(|frame| {
+                let canvas = Canvas::default()
+                    .block(
+                        Block::default()
+                            .title("Chip8 Emulator by nuculabs.dev")
+                            .borders(Borders::ALL),
+                    )
+                    .marker(Marker::Bar)
+                    .paint(|ctx| {
+                        for row in 0..DISPLAY_HEIGHT {
+                            for column in 0..DISPLAY_WIDTH {
+                                if display_data[row * DISPLAY_WIDTH + column] {
+                                    ctx.draw(&ratatui::widgets::canvas::Rectangle {
+                                        x: column as f64,
+                                        y: DISPLAY_HEIGHT as f64 - row as f64,
+                                        width: 1.0,
+                                        height: 1.0,
+                                        color: Color::White,
+                                    });
+                                }
                             }
                         }
-                    }
-                })
-                .x_bounds([0.0, DISPLAY_WIDTH as f64])
-                .y_bounds([0.0, DISPLAY_HEIGHT as f64]);
+                    })
+                    .x_bounds([0.0, DISPLAY_WIDTH as f64])
+                    .y_bounds([0.0, DISPLAY_HEIGHT as f64]);
 
-            // Render the canvas widget
-
-            // Center the paragraph in the terminal
-            frame.render_widget(canvas, frame.area());
-        }).expect("failed to draw");
+                // Render the canvas widget
+                frame.render_widget(canvas, frame.area());
+            })
+            .expect("failed to draw");
     }
 }

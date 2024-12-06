@@ -26,6 +26,10 @@ pub enum ProcessorInstruction {
     SetIndexRegister(u16),
     /// Draws to the screen.
     Draw(u8, u8, u8),
+    /// Call sets PC to the address and saves the return address on the stack
+    Call(u16),
+    /// Pops the stack and sets the PC
+    Return,
     /// Unknown instruction
     UnknownInstruction,
 }
@@ -86,9 +90,7 @@ impl Instruction {
                 )
             }
             // Set index register
-            (0xA, _, _, _) => {
-                ProcessorInstruction::SetIndexRegister(Self::grab_inner_data(data))
-            },
+            (0xA, _, _, _) => ProcessorInstruction::SetIndexRegister(Self::grab_inner_data(data)),
             // Draw on screen
             (0xD, _, _, _) => {
                 // DXYN
@@ -98,6 +100,18 @@ impl Instruction {
                     Self::grab_last_nibble(data),
                 )
             }
+            /*
+            00EE and 2NNN:
+
+            2NNN calls the subroutine at memory location NNN. In other words, just like 1NNN,
+            you should set PC to NNN. However, the difference between a jump and a call is that
+            this instruction should first push the current PC to the stack, so the subroutine can return later.
+
+            Returning from a subroutine is done with 00EE, and it does this by removing
+            (“popping”) the last address from the stack and setting the PC to it.
+             */
+            (0x0, 0x0, 0xE, 0xE) => ProcessorInstruction::Return,
+            (0x2, _, _, _) => ProcessorInstruction::Call(Self::grab_inner_data(data)),
             // Unknown instruction
             _ => ProcessorInstruction::UnknownInstruction,
         }
@@ -117,7 +131,6 @@ impl Instruction {
     fn grab_zeroth_nibble(data: u16) -> u8 {
         ((data & 0xF000) >> 12) as u8
     }
-
 
     /// Grabs the first nibble from the data.
     fn grab_first_nibble(data: u16) -> u8 {

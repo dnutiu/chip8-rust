@@ -1,4 +1,4 @@
-use crate::display::{RatatuiDisplay};
+use crate::display::RatatuiDisplay;
 use crate::emulator::Emulator;
 use env_logger;
 

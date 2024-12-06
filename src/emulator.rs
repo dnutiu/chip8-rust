@@ -149,9 +149,11 @@ where
             ProcessorInstruction::SetIndexRegister(data) => {
                 trace!("Set index register to data {:04x}", data);
                 self.index_register = data;
-            },
+            }
             ProcessorInstruction::Draw(vx_register, vy_register, num_rows) => {
-                trace!("Draw vx_register={vx_register} vy_register={vy_register} pixels={num_rows}");
+                trace!(
+                    "Draw vx_register={vx_register} vy_register={vy_register} pixels={num_rows}"
+                );
                 let x_coordinate = self.registers[vx_register as usize];
                 let y_coordinate = self.registers[vy_register as usize];
 
@@ -187,6 +189,18 @@ where
                 }
 
                 self.display.render(&self.display_data);
+            }
+            ProcessorInstruction::Return => {
+                let value = self.stack.pop().unwrap();
+                trace!("Return to {value:04x}");
+                self.program_counter = value;
+            }
+            ProcessorInstruction::Call(address) => {
+                trace!("Call {address:04x}");
+                // Save PC to the stack
+                self.stack.push(self.program_counter);
+                // Set PC to subroutine address
+                self.program_counter = address;
             }
             ProcessorInstruction::UnknownInstruction => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);
