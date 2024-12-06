@@ -12,7 +12,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     let mut emulator = Emulator::new(RatatuiDisplay::new());
 
-    emulator.emulate(String::from("./roms/ibm-logo.ch8"))?;
+    emulator.emulate(String::from("./roms/1-chip8-logo.ch8"))?;
 
     Ok(())
 }

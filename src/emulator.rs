@@ -124,7 +124,7 @@ where
             self.execute_instruction(instruction)?;
 
             // insert some delay
-            thread::sleep(time::Duration::from_millis(50));
+            thread::sleep(time::Duration::from_millis(10));
         }
     }
 
@@ -144,7 +144,8 @@ where
             }
             ProcessorInstruction::AddValueToRegister(register, data) => {
                 trace!("Add to register {} data {:04x}", register, data);
-                self.registers[register as usize] += data
+                let (result, _) = self.registers[register as usize].overflowing_add(data);
+                self.registers[register as usize] = result;
             }
             ProcessorInstruction::SetIndexRegister(data) => {
                 trace!("Set index register to data {:04x}", data);
@@ -201,6 +202,72 @@ where
                 self.stack.push(self.program_counter);
                 // Set PC to subroutine address
                 self.program_counter = address;
+            }
+            ProcessorInstruction::Set(vx, vy) => {
+                trace!("Set VX={vx:04x} VY={vy:04x}");
+                self.registers[vx as usize] = vy;
+            }
+            ProcessorInstruction::BinaryOr(vx, vy) => {
+                trace!("BinaryOr VX={vx:04x} VY={vy:04x}");
+                self.registers[vx as usize] |= self.registers[vy as usize]
+            }
+            ProcessorInstruction::BinaryAnd(vx, vy) => {
+                trace!("BinaryAnd VX={vx:04x} VY={vy:04x}");
+                self.registers[vx as usize] &= self.registers[vy as usize]
+            }
+            ProcessorInstruction::BinaryXor(vx, vy) => {
+                trace!("BinaryXor VX={vx:04x} VY={vy:04x}");
+                self.registers[vx as usize] ^= self.registers[vy as usize]
+            }
+            ProcessorInstruction::Add(vx, vy) => {
+                trace!("Add VX={vx:04x} VY={vy:04x}");
+                let (result, overflow) =
+                    self.registers[vx as usize].overflowing_add(self.registers[vy as usize]);
+
+                self.registers[vx as usize] = result;
+                if overflow {
+                    self.registers[0xF] = 1;
+                } else {
+                    self.registers[0xF] = 0;
+                }
+            }
+            ProcessorInstruction::SubtractVX(vx, vy) => {
+                trace!("SubtractVX VX={vx:04x} VY={vy:04x}");
+                if self.registers[vx as usize] > self.registers[vy as usize] {
+                    self.registers[0xF] = 1
+                } else {
+                    // The register 0xF will be 0 if there's an underflow.
+                    self.registers[0xF] = 0
+                }
+                let (result, _) =
+                    self.registers[vx as usize].overflowing_sub(self.registers[vy as usize]);
+                self.registers[vx as usize] = result;
+            }
+            ProcessorInstruction::SubtractVY(vx, vy) => {
+                trace!("SubtractVY VX={vx:04x} VY={vy:04x}");
+                if self.registers[vy as usize] > self.registers[vx as usize] {
+                    self.registers[0xF] = 1
+                } else {
+                    // The register 0xF will be 0 if there's an underflow.
+                    self.registers[0xF] = 0
+                }
+                let (result, _) =
+                    self.registers[vy as usize].overflowing_sub(self.registers[vx as usize]);
+                self.registers[vx as usize] = result;
+            }
+            ProcessorInstruction::ShiftLeft(vx, vy) => {
+                trace!("ShiftLeft VX={vx:04x} VY={vy:04x}");
+                // Original chip8 behavior
+                self.registers[0xF] = (self.registers[vy as usize] & 0x10) >> 4;
+                self.registers[vx as usize] = self.registers[vy as usize];
+                self.registers[vx as usize] <<= 1;
+            }
+            ProcessorInstruction::ShiftRight(vx, vy) => {
+                trace!("ShiftRight VX={vx:04x} VY={vy:04x}");
+                // Original chip8 behavior
+                self.registers[0xF] = self.registers[vy as usize] & 0x01;
+                self.registers[vx as usize] = self.registers[vy as usize];
+                self.registers[vx as usize] >>= 1;
             }
             ProcessorInstruction::UnknownInstruction => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);

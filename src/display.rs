@@ -76,7 +76,7 @@ impl Display for RatatuiDisplay {
                             .title("Chip8 Emulator by nuculabs.dev")
                             .borders(Borders::ALL),
                     )
-                    .marker(Marker::Bar)
+                    .marker(Marker::HalfBlock)
                     .paint(|ctx| {
                         for row in 0..DISPLAY_HEIGHT {
                             for column in 0..DISPLAY_WIDTH {
