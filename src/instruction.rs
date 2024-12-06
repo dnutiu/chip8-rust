@@ -50,6 +50,10 @@ pub enum ProcessorInstruction {
     /// Set VX = VY << 1 VF needs to be set to the bit that is shifted out.
     /// This instruction has different behaviour on CHIP-48 and SUPER-CHIP.
     ShiftLeft(u8, u8),
+    /// Jumps to the address and adds V0 offset.
+    JumpWithOffset(u16),
+    /// Generates a random number ANDed with the data and stores it in VX.
+    GenerateRandomNumber(u8, u8),
     /// Unknown instruction
     UnknownInstruction,
 }
@@ -168,6 +172,15 @@ impl Instruction {
                 Self::grab_first_nibble(data),
                 Self::grab_middle_nibble(data),
             ),
+            (0xB, _, _, _) => {
+                ProcessorInstruction::JumpWithOffset(Self::grab_inner_data(data))
+            }
+            (0xC, _, _, _) => {
+                ProcessorInstruction::GenerateRandomNumber(
+                    Self::grab_first_nibble(data),
+                    Self::grab_last_byte(data),
+                )
+            }
             // Unknown instruction
             _ => ProcessorInstruction::UnknownInstruction,
         }

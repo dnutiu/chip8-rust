@@ -7,6 +7,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::{thread, time};
+use rand::Rng;
 
 /// Represents the display's width in pixels.
 const DISPLAY_WIDTH: usize = 64;
@@ -268,6 +269,15 @@ where
                 self.registers[0xF] = self.registers[vy as usize] & 0x01;
                 self.registers[vx as usize] = self.registers[vy as usize];
                 self.registers[vx as usize] >>= 1;
+            }
+            ProcessorInstruction::JumpWithOffset(address) => {
+                let offset = self.registers[0x0];
+                trace!("Jump With offset Address={address:04x} Offset={offset:04x}");
+
+                self.program_counter = address + offset as u16
+            }
+            ProcessorInstruction::GenerateRandomNumber(register, data) => {
+                self.registers[register as usize] = rand::thread_rng().gen_range(0x00..0xFF) & data
             }
             ProcessorInstruction::UnknownInstruction => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);

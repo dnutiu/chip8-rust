@@ -12,6 +12,7 @@ env_logger = "0.11.5"
 anyhow = "1.0.93"
 ratatui = "0.29.0"
 crossterm = "0.28.1"
+rand = "0.8.5"
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"
