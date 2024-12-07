@@ -54,6 +54,14 @@ pub enum ProcessorInstruction {
     JumpWithOffset(u16),
     /// Generates a random number ANDed with the data and stores it in VX.
     GenerateRandomNumber(u8, u8),
+    /// Skips the next instruction if VX is equal to data.
+    SkipEqualVXData(u8, u8),
+    /// Skip the next instruction if VX is not equal to data.
+    SkipNotEqualVXData(u8, u8),
+    /// Skips the next instruction if VX is equal to VY.
+    SkipEqualVXVY(u8, u8),
+    /// Skip the next instruction if VX is not equal to VY.
+    SkipNotEqualVXVY(u8, u8),
     /// Unknown instruction
     UnknownInstruction,
 }
@@ -172,15 +180,27 @@ impl Instruction {
                 Self::grab_first_nibble(data),
                 Self::grab_middle_nibble(data),
             ),
-            (0xB, _, _, _) => {
-                ProcessorInstruction::JumpWithOffset(Self::grab_inner_data(data))
-            }
-            (0xC, _, _, _) => {
-                ProcessorInstruction::GenerateRandomNumber(
-                    Self::grab_first_nibble(data),
-                    Self::grab_last_byte(data),
-                )
-            }
+            (0xB, _, _, _) => ProcessorInstruction::JumpWithOffset(Self::grab_inner_data(data)),
+            (0xC, _, _, _) => ProcessorInstruction::GenerateRandomNumber(
+                Self::grab_first_nibble(data),
+                Self::grab_last_byte(data),
+            ),
+            (0x3, _, _, _) => ProcessorInstruction::SkipEqualVXData(
+                Self::grab_first_nibble(data),
+                Self::grab_last_byte(data),
+            ),
+            (0x4, _, _, _) => ProcessorInstruction::SkipNotEqualVXData(
+                Self::grab_first_nibble(data),
+                Self::grab_last_byte(data),
+            ),
+            (0x5, _, _, 0x0) => ProcessorInstruction::SkipEqualVXVY(
+                Self::grab_first_nibble(data),
+                Self::grab_middle_nibble(data),
+            ),
+            (0x9, _, _, 0x0) => ProcessorInstruction::SkipNotEqualVXVY(
+                Self::grab_first_nibble(data),
+                Self::grab_middle_nibble(data),
+            ),
             // Unknown instruction
             _ => ProcessorInstruction::UnknownInstruction,
         }

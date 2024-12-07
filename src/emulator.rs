@@ -3,11 +3,11 @@ use crate::instruction::{Instruction, ProcessorInstruction};
 use crate::stack::Stack;
 use anyhow::anyhow;
 use log::{debug, info, trace, warn};
+use rand::Rng;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::{thread, time};
-use rand::Rng;
 
 /// Represents the display's width in pixels.
 const DISPLAY_WIDTH: usize = 64;
@@ -279,7 +279,33 @@ where
             ProcessorInstruction::GenerateRandomNumber(register, data) => {
                 self.registers[register as usize] = rand::thread_rng().gen_range(0x00..0xFF) & data
             }
-            ProcessorInstruction::UnknownInstruction => {
+            ProcessorInstruction::SkipEqualVXData(vx, data) => {
+                let vx_data = self.registers[vx as usize];
+                if vx_data == data {
+                    self.program_counter += 2
+                }
+            }
+            ProcessorInstruction::SkipNotEqualVXData(vx, data) => {
+                let vx_data = self.registers[vx as usize];
+                if vx_data != data {
+                    self.program_counter += 2
+                }
+            }
+            ProcessorInstruction::SkipEqualVXVY(vx, vy) => {
+                let vx_data = self.registers[vx as usize];
+                let vy_data = self.registers[vy as usize];
+                if vx_data == vy_data {
+                    self.program_counter += 2
+                }
+            }
+            ProcessorInstruction::SkipNotEqualVXVY(vx, vy) => {
+                let vx_data = self.registers[vx as usize];
+                let vy_data = self.registers[vy as usize];
+                if vx_data != vy_data {
+                    self.program_counter += 2
+                }
+            }
+            _ => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);
             }
         }
