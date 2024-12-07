@@ -1,5 +1,6 @@
 use std::fmt;
 use std::fmt::{Display, Formatter, LowerHex};
+use log::info;
 /*
 Although every instruction will have a first nibble that tells you what kind of instruction it is,
 the rest of the nibbles will have different meanings. To differentiate these meanings,
@@ -12,7 +13,7 @@ we usually call them different things, but all of them can be any hexadecimal nu
     NNN: The second, third and fourth nibbles. A 12-bit immediate memory address.
  */
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ProcessorInstruction {
     /// Clears the screen
     ClearScreen,
@@ -88,7 +89,7 @@ pub struct Instruction {
 impl Instruction {
     /// Creates a new instruction instance.
     pub(crate) fn new(data: [u8; 2]) -> Self {
-        let data = (data[0] as u16) << 8u8 | (data[1] as u16);
+        let data = ((data[0] as u16) << 8) | (data[1] as u16);
         Instruction {
             data,
             processor_instruction: Instruction::decode_instruction(data),
@@ -109,7 +110,7 @@ impl Instruction {
         let digit1 = Self::grab_zeroth_nibble(data);
         let digit2 = Self::grab_first_nibble(data);
         let digit3 = Self::grab_middle_nibble(data);
-        let digit4 = Self::grab_first_nibble(data);
+        let digit4 = Self::grab_last_nibble(data);
         match (digit1, digit2, digit3, digit4) {
             // Clear Display
             (0x0, 0x0, 0xE, 0x0) => ProcessorInstruction::ClearScreen,
@@ -302,9 +303,16 @@ mod tests {
     }
 
     #[test]
-    fn test_instruction_partial_eq() {
+    fn test_instruction_trait_partial_eq() {
         let instruction = Instruction::new([0xffu8, 0xffu8]);
 
         assert_eq!(instruction, 0xffffu16)
+    }
+
+    #[test]
+    fn test_instruction_shift_left() {
+        let instruction = Instruction::new([0x81, 0x1E]);
+
+        assert_eq!(instruction.processor_instruction, ProcessorInstruction::ShiftLeft(1, 1))
     }
 }
