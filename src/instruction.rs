@@ -72,6 +72,9 @@ pub enum ProcessorInstruction {
     AddToIndex(u8),
     /// Sets the index register to the hexadecimal character in VX.
     FontCharacter(u8),
+    BinaryCodedDecimalConversion(u8),
+    StoreMemory(u8),
+    LoadMemory(u8),
     /// Unknown instruction
     UnknownInstruction,
 }
@@ -213,6 +216,21 @@ impl Instruction {
             (0xF, _, 0x1, 0xE) => ProcessorInstruction::AddToIndex(Self::grab_first_nibble(data)),
             (0xF, _, 0x2, 0x9) => {
                 ProcessorInstruction::FontCharacter(Self::grab_first_nibble(data))
+            }
+            (0xF, _, 0x3, 0x3) => {
+                ProcessorInstruction::BinaryCodedDecimalConversion(
+                    Self::grab_first_nibble(data)
+                )
+            }
+            (0xF, _, 0x5, 0x5) => {
+                ProcessorInstruction::StoreMemory(
+                    Self::grab_first_nibble(data)
+                )
+            }
+            (0xF, _, 0x6, 0x5) => {
+                ProcessorInstruction::LoadMemory(
+                    Self::grab_first_nibble(data)
+                )
             }
             // Unknown instruction
             _ => ProcessorInstruction::UnknownInstruction,
