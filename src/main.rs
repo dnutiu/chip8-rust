@@ -6,6 +6,7 @@ mod display;
 mod emulator;
 mod instruction;
 mod stack;
+mod input;
 
 fn main() -> Result<(), anyhow::Error> {
     env_logger::init();
