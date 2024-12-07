@@ -350,6 +350,18 @@ where
                 trace!("SetSoundTimer");
                 self.sound_timer = self.registers[vx as usize]
             }
+            ProcessorInstruction::AddToIndex(vx) => {
+                trace!("AddToIndex");
+                let (result, overflow) = self
+                    .index_register
+                    .overflowing_add(self.registers[vx as usize] as u16);
+                self.index_register = result;
+                if overflow {
+                    self.registers[0xF] = 1
+                } else {
+                    self.registers[0xF] = 0
+                }
+            }
             _ => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);
             }

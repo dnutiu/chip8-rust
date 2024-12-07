@@ -68,6 +68,7 @@ pub enum ProcessorInstruction {
     SetDelayTimer(u8),
     /// Sets the sound timer to the value in VX.
     SetSoundTimer(u8),
+    AddToIndex(u8),
     /// Unknown instruction
     UnknownInstruction,
 }
@@ -206,6 +207,7 @@ impl Instruction {
             (0xF, _, 0x1, 0x8) => {
                 ProcessorInstruction::SetSoundTimer(Self::grab_first_nibble(data))
             }
+            (0xF, _, 0x1, 0xE) => ProcessorInstruction::AddToIndex(Self::grab_first_nibble(data)),
             // Unknown instruction
             _ => ProcessorInstruction::UnknownInstruction,
         }
