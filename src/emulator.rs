@@ -234,7 +234,7 @@ where
             }
             ProcessorInstruction::Set(vx, vy) => {
                 trace!("Set VX={vx:04x} VY={vy:04x}");
-                self.registers[vx as usize] = vy;
+                self.registers[vx as usize] = self.registers[vy as usize];
             }
             ProcessorInstruction::BinaryOr(vx, vy) => {
                 trace!("BinaryOr VX={vx:04x} VY={vy:04x}");
