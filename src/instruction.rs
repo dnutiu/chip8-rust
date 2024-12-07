@@ -138,16 +138,6 @@ impl Instruction {
                     Self::grab_last_nibble(data),
                 )
             }
-            /*
-            00EE and 2NNN:
-
-            2NNN calls the subroutine at memory location NNN. In other words, just like 1NNN,
-            you should set PC to NNN. However, the difference between a jump and a call is that
-            this instruction should first push the current PC to the stack, so the subroutine can return later.
-
-            Returning from a subroutine is done with 00EE, and it does this by removing
-            (“popping”) the last address from the stack and setting the PC to it.
-             */
             (0x0, 0x0, 0xE, 0xE) => ProcessorInstruction::Return,
             (0x2, _, _, _) => ProcessorInstruction::Call(Self::grab_inner_data(data)),
             (0x8, _, _, 0x0) => ProcessorInstruction::Set(
@@ -207,15 +197,15 @@ impl Instruction {
                 Self::grab_first_nibble(data),
                 Self::grab_middle_nibble(data),
             ),
-            (0xF, _, 0x0, 0x7) => ProcessorInstruction::SetVXToDelayTimer(
-                Self::grab_first_nibble(data)
-            ),
-            (0xF, _, 0x1, 0x5) => ProcessorInstruction::SetDelayTimer(
-                Self::grab_first_nibble(data)
-            ),
-            (0xF, _, 0x1, 0x8) => ProcessorInstruction::SetSoundTimer(
-                Self::grab_first_nibble(data)
-            ),
+            (0xF, _, 0x0, 0x7) => {
+                ProcessorInstruction::SetVXToDelayTimer(Self::grab_first_nibble(data))
+            }
+            (0xF, _, 0x1, 0x5) => {
+                ProcessorInstruction::SetDelayTimer(Self::grab_first_nibble(data))
+            }
+            (0xF, _, 0x1, 0x8) => {
+                ProcessorInstruction::SetSoundTimer(Self::grab_first_nibble(data))
+            }
             // Unknown instruction
             _ => ProcessorInstruction::UnknownInstruction,
         }

@@ -7,6 +7,7 @@ use rand::Rng;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+use std::time::Instant;
 use std::{thread, time};
 
 /// Represents the display's width in pixels.
@@ -110,9 +111,12 @@ where
 
     /// Emulation loop executes the fetch -> decode -> execute pipeline
     fn emulation_loop<T>(&mut self) -> Result<(), anyhow::Error> {
+        let mut start_time = Instant::now();
         let mut last_program_counter = self.program_counter;
         loop {
-            // fetch instruction
+            self.handle_timers(&mut start_time);
+
+            // fetch instruction & decode it
             let instruction = self.fetch_instruction()?;
             self.program_counter += 2;
 
@@ -121,7 +125,7 @@ where
             }
             last_program_counter = self.program_counter;
 
-            // decode & execute
+            // execute
             self.execute_instruction(instruction)?;
 
             // insert some delay
@@ -129,6 +133,30 @@ where
         }
     }
 
+    /// Handles the timers logic.
+    fn handle_timers(&mut self, start_time: &mut Instant) {
+        // Handle 60hz timers
+        let elapsed_time = start_time.elapsed().as_micros();
+        // 16667 us which is 1/60 of a second
+        if elapsed_time > 16667 {
+            if self.delay_timer > 0 {
+                self.delay_timer -= 1
+            }
+            if self.sound_timer > 0 {
+                self.delay_timer -= 1
+            } else {
+                self.do_beep()
+            }
+            *start_time = Instant::now()
+        }
+    }
+
+    /// Should make an audible beep.
+    fn do_beep(&mut self) {
+        // beep, for now
+    }
+
+    /// Executes the instruction
     fn execute_instruction(&mut self, instruction: Instruction) -> Result<(), anyhow::Error> {
         match instruction.processor_instruction() {
             ProcessorInstruction::ClearScreen => {
