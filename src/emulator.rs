@@ -286,14 +286,12 @@ where
             }
             ProcessorInstruction::ShiftLeft(vx, vy) => {
                 trace!("ShiftLeft VX={vx:04x} VY={vy:04x}");
-                // Original chip8 behavior
-                self.registers[0xF] = (self.registers[vx as usize] & 0x10) >> 4;
+                self.registers[0xF] = (self.registers[vx as usize] >> 7) & 1;
                 self.registers[vx as usize] <<= 1;
             }
             ProcessorInstruction::ShiftRight(vx, vy) => {
                 trace!("ShiftRight VX={vx:04x} VY={vy:04x}");
-                // Original chip8 behavior
-                self.registers[0xF] = self.registers[vx as usize] & 0x01;
+                self.registers[0xF] = self.registers[vx as usize] & 0x1;
                 self.registers[vx as usize] >>= 1;
             }
             ProcessorInstruction::JumpWithOffset(address) => {
