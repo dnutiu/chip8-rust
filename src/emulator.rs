@@ -362,6 +362,9 @@ where
                     self.registers[0xF] = 0
                 }
             }
+            ProcessorInstruction::FontCharacter(vx) => {
+                self.index_register = 0xF0 + (self.registers[vx as usize] & 0x0F) as u16;
+            }
             _ => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);
             }

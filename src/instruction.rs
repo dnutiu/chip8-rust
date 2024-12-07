@@ -68,7 +68,10 @@ pub enum ProcessorInstruction {
     SetDelayTimer(u8),
     /// Sets the sound timer to the value in VX.
     SetSoundTimer(u8),
+    /// Adds the value of VX to the index register and sets the overflow flag.
     AddToIndex(u8),
+    /// Sets the index register to the hexadecimal character in VX.
+    FontCharacter(u8),
     /// Unknown instruction
     UnknownInstruction,
 }
@@ -106,7 +109,7 @@ impl Instruction {
         let digit4 = Self::grab_first_nibble(data);
         match (digit1, digit2, digit3, digit4) {
             // Clear Display
-            (0, 0, 0xE, 0) => ProcessorInstruction::ClearScreen,
+            (0x0, 0x0, 0xE, 0x0) => ProcessorInstruction::ClearScreen,
             // Jump
             (0x1, _, _, _) => {
                 // 1NNN
@@ -208,6 +211,9 @@ impl Instruction {
                 ProcessorInstruction::SetSoundTimer(Self::grab_first_nibble(data))
             }
             (0xF, _, 0x1, 0xE) => ProcessorInstruction::AddToIndex(Self::grab_first_nibble(data)),
+            (0xF, _, 0x2, 0x9) => {
+                ProcessorInstruction::FontCharacter(Self::grab_first_nibble(data))
+            }
             // Unknown instruction
             _ => ProcessorInstruction::UnknownInstruction,
         }
