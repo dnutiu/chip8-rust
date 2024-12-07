@@ -1,6 +1,5 @@
 use std::fmt;
 use std::fmt::{Display, Formatter, LowerHex};
-use log::info;
 /*
 Although every instruction will have a first nibble that tells you what kind of instruction it is,
 the rest of the nibbles will have different meanings. To differentiate these meanings,
@@ -219,20 +218,10 @@ impl Instruction {
                 ProcessorInstruction::FontCharacter(Self::grab_first_nibble(data))
             }
             (0xF, _, 0x3, 0x3) => {
-                ProcessorInstruction::BinaryCodedDecimalConversion(
-                    Self::grab_first_nibble(data)
-                )
+                ProcessorInstruction::BinaryCodedDecimalConversion(Self::grab_first_nibble(data))
             }
-            (0xF, _, 0x5, 0x5) => {
-                ProcessorInstruction::StoreMemory(
-                    Self::grab_first_nibble(data)
-                )
-            }
-            (0xF, _, 0x6, 0x5) => {
-                ProcessorInstruction::LoadMemory(
-                    Self::grab_first_nibble(data)
-                )
-            }
+            (0xF, _, 0x5, 0x5) => ProcessorInstruction::StoreMemory(Self::grab_first_nibble(data)),
+            (0xF, _, 0x6, 0x5) => ProcessorInstruction::LoadMemory(Self::grab_first_nibble(data)),
             // Unknown instruction
             _ => ProcessorInstruction::UnknownInstruction,
         }
@@ -310,9 +299,272 @@ mod tests {
     }
 
     #[test]
+    fn test_instruction_clear_screen() {
+        let instruction = Instruction::new([0x00, 0xE0]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::ClearScreen
+        )
+    }
+
+    #[test]
+    fn test_instruction_call() {
+        let instruction = Instruction::new([0x2A, 0xBC]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::Call(0xABC)
+        )
+    }
+
+    #[test]
+    fn test_instruction_return() {
+        let instruction = Instruction::new([0x00, 0xEE]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::Return
+        )
+    }
+
+    #[test]
+    fn test_instruction_skip_equal_vx_data() {
+        let instruction = Instruction::new([0x3A, 0xBC]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SkipEqualVXData(0xA, 0xBC)
+        )
+    }
+
+    #[test]
+    fn test_instruction_skip_not_equal_vx_data() {
+        let instruction = Instruction::new([0x4A, 0xBC]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SkipNotEqualVXData(0xA, 0xBC)
+        )
+    }
+
+    #[test]
+    fn test_instruction_skip_equal_vx_vy() {
+        let instruction = Instruction::new([0x5A, 0xB0]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SkipEqualVXVY(0xA, 0xB)
+        )
+    }
+
+    #[test]
+    fn test_instruction_skip_not_equal_vx_vy() {
+        let instruction = Instruction::new([0x9A, 0xB0]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SkipNotEqualVXVY(0xA, 0xB)
+        )
+    }
+
+    #[test]
+    fn test_instruction_set_register() {
+        let instruction = Instruction::new([0x61, 0x40]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SetRegister(0x1, 0x40)
+        )
+    }
+
+    #[test]
+    fn test_instruction_add_to_register() {
+        let instruction = Instruction::new([0x71, 0x40]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::AddValueToRegister(0x1, 0x40)
+        )
+    }
+
+    #[test]
+    fn test_instruction_set() {
+        let instruction = Instruction::new([0x81, 0x40]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::Set(1, 4)
+        )
+    }
+
+    #[test]
+    fn test_instruction_binary_or() {
+        let instruction = Instruction::new([0x81, 0xF1]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::BinaryOr(1, 0xF)
+        )
+    }
+
+    #[test]
+    fn test_instruction_binary_and() {
+        let instruction = Instruction::new([0x81, 0xF2]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::BinaryAnd(1, 0xF)
+        )
+    }
+
+    #[test]
+    fn test_instruction_logical_xor() {
+        let instruction = Instruction::new([0x81, 0xF3]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::BinaryXor(1, 0xF)
+        )
+    }
+
+    #[test]
+    fn test_instruction_logical_add() {
+        let instruction = Instruction::new([0x81, 0xF4]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::Add(1, 0xF)
+        )
+    }
+
+    #[test]
+    fn test_instruction_logical_subtract_vx() {
+        let instruction = Instruction::new([0x8E, 0xF5]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SubtractVX(0xE, 0xF)
+        )
+    }
+
+    #[test]
+    fn test_instruction_logical_subtract_vy() {
+        let instruction = Instruction::new([0x8E, 0xF7]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SubtractVY(0xE, 0xF)
+        )
+    }
+
+    #[test]
     fn test_instruction_shift_left() {
         let instruction = Instruction::new([0x81, 0x1E]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::ShiftLeft(1, 1)
+        )
+    }
 
-        assert_eq!(instruction.processor_instruction, ProcessorInstruction::ShiftLeft(1, 1))
+    #[test]
+    fn test_instruction_shift_right() {
+        let instruction = Instruction::new([0x81, 0x26]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::ShiftRight(1, 2)
+        )
+    }
+
+    #[test]
+    fn test_instruction_set_index_register() {
+        let instruction = Instruction::new([0xAA, 0xBC]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SetIndexRegister(0xABC)
+        )
+    }
+
+    #[test]
+    fn test_instruction_jump_with_offset() {
+        let instruction = Instruction::new([0xBA, 0xBC]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::JumpWithOffset(0xABC)
+        )
+    }
+
+    #[test]
+    fn test_instruction_random() {
+        let instruction = Instruction::new([0xCA, 0xBC]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::GenerateRandomNumber(0xA, 0xBC)
+        )
+    }
+
+    #[test]
+    fn test_instruction_display() {
+        let instruction = Instruction::new([0xDA, 0xBC]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::Draw(0xA, 0xB, 0xC)
+        )
+    }
+
+    #[test]
+    fn test_instruction_set_vx_timer() {
+        let instruction = Instruction::new([0xFA, 0x07]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SetVXToDelayTimer(0xA)
+        )
+    }
+
+    #[test]
+    fn test_instruction_set_delay_timer() {
+        let instruction = Instruction::new([0xFA, 0x15]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SetDelayTimer(0xA)
+        )
+    }
+
+    #[test]
+    fn test_instruction_set_sound_timer() {
+        let instruction = Instruction::new([0xFA, 0x18]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SetSoundTimer(0xA)
+        )
+    }
+
+    #[test]
+    fn test_instruction_add_to_index() {
+        let instruction = Instruction::new([0xFA, 0x1E]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::AddToIndex(0xA)
+        )
+    }
+
+    #[test]
+    fn test_instruction_font_character() {
+        let instruction = Instruction::new([0xFA, 0x29]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::FontCharacter(0xA)
+        )
+    }
+
+    #[test]
+    fn test_instruction_binary_coded_decimal() {
+        let instruction = Instruction::new([0xFA, 0x33]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::BinaryCodedDecimalConversion(0xA)
+        )
+    }
+
+    #[test]
+    fn test_instruction_load_memory() {
+        let instruction = Instruction::new([0xFA, 0x55]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::StoreMemory(0xA)
+        )
+    }
+
+    #[test]
+    fn test_instruction_store_memory() {
+        let instruction = Instruction::new([0xFA, 0x65]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::LoadMemory(0xA)
+        )
     }
 }

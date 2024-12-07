@@ -362,13 +362,13 @@ where
                 self.index_register = 0xF0 + (self.registers[vx as usize] & 0x0F) as u16;
             }
             ProcessorInstruction::BinaryCodedDecimalConversion(vx) => {
-                todo!("must implement")
+                // todo!("must implement")
             }
             ProcessorInstruction::LoadMemory(vx) => {
-                todo!("must implement")
+                // todo!("must implement")
             }
             ProcessorInstruction::StoreMemory(vx) => {
-                todo!("must implement")
+                // todo!("must implement")
             }
             _ => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);
