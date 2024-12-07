@@ -62,6 +62,12 @@ pub enum ProcessorInstruction {
     SkipEqualVXVY(u8, u8),
     /// Skip the next instruction if VX is not equal to VY.
     SkipNotEqualVXVY(u8, u8),
+    /// Sets the value of the VX instruction to the current value of the delay timer.
+    SetVXToDelayTimer(u8),
+    /// Sets the delay timer to the value in VX.
+    SetDelayTimer(u8),
+    /// Sets the sound timer to the value in VX.
+    SetSoundTimer(u8),
     /// Unknown instruction
     UnknownInstruction,
 }
@@ -200,6 +206,15 @@ impl Instruction {
             (0x9, _, _, 0x0) => ProcessorInstruction::SkipNotEqualVXVY(
                 Self::grab_first_nibble(data),
                 Self::grab_middle_nibble(data),
+            ),
+            (0xF, _, 0x0, 0x7) => ProcessorInstruction::SetVXToDelayTimer(
+                Self::grab_first_nibble(data)
+            ),
+            (0xF, _, 0x1, 0x5) => ProcessorInstruction::SetDelayTimer(
+                Self::grab_first_nibble(data)
+            ),
+            (0xF, _, 0x1, 0x8) => ProcessorInstruction::SetSoundTimer(
+                Self::grab_first_nibble(data)
             ),
             // Unknown instruction
             _ => ProcessorInstruction::UnknownInstruction,

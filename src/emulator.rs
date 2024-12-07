@@ -277,21 +277,25 @@ where
                 self.program_counter = address + offset as u16
             }
             ProcessorInstruction::GenerateRandomNumber(register, data) => {
+                trace!("Generate random number");
                 self.registers[register as usize] = rand::thread_rng().gen_range(0x00..0xFF) & data
             }
             ProcessorInstruction::SkipEqualVXData(vx, data) => {
+                trace!("SkipEqualVXData");
                 let vx_data = self.registers[vx as usize];
                 if vx_data == data {
                     self.program_counter += 2
                 }
             }
             ProcessorInstruction::SkipNotEqualVXData(vx, data) => {
+                trace!("SkipNotEqualVXData");
                 let vx_data = self.registers[vx as usize];
                 if vx_data != data {
                     self.program_counter += 2
                 }
             }
             ProcessorInstruction::SkipEqualVXVY(vx, vy) => {
+                trace!("SkipNotEqualVXData");
                 let vx_data = self.registers[vx as usize];
                 let vy_data = self.registers[vy as usize];
                 if vx_data == vy_data {
@@ -299,11 +303,24 @@ where
                 }
             }
             ProcessorInstruction::SkipNotEqualVXVY(vx, vy) => {
+                trace!("SkipNotEqualVXVY");
                 let vx_data = self.registers[vx as usize];
                 let vy_data = self.registers[vy as usize];
                 if vx_data != vy_data {
                     self.program_counter += 2
                 }
+            }
+            ProcessorInstruction::SetVXToDelayTimer(vx) => {
+                trace!("SetVXToDelayTimer");
+                self.registers[vx as usize] = self.delay_timer
+            }
+            ProcessorInstruction::SetDelayTimer(vx) => {
+                trace!("SetDelayTimer");
+                self.delay_timer = self.registers[vx as usize]
+            }
+            ProcessorInstruction::SetSoundTimer(vx) => {
+                trace!("SetSoundTimer");
+                self.sound_timer = self.registers[vx as usize]
             }
             _ => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);
