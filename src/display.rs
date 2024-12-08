@@ -5,10 +5,10 @@ use ratatui::widgets::{Block, Borders};
 use ratatui::DefaultTerminal;
 
 /// Represents the display's width in pixels.
-const DISPLAY_WIDTH: usize = 64;
+pub const DISPLAY_WIDTH: usize = 64;
 
 /// Represents the display's height pixels.
-const DISPLAY_HEIGHT: usize = 32;
+pub const DISPLAY_HEIGHT: usize = 32;
 
 /// Display trait
 pub trait Display {

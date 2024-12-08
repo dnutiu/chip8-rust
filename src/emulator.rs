@@ -1,4 +1,5 @@
 use crate::display::Display;
+use crate::display::{DISPLAY_HEIGHT, DISPLAY_WIDTH};
 use crate::instruction::{Instruction, ProcessorInstruction};
 use crate::sound::SoundModule;
 use crate::stack::Stack;
@@ -10,12 +11,6 @@ use std::io::Read;
 use std::path::Path;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
-
-/// Represents the display's width in pixels.
-const DISPLAY_WIDTH: usize = 64;
-
-/// Represents the display's height pixels.
-const DISPLAY_HEIGHT: usize = 32;
 
 const MEMORY_SIZE: usize = 4096;
 const NUMBER_OF_REGISTERS: usize = 16;
@@ -138,7 +133,6 @@ where
                 }
 
                 tick_timer = Instant::now();
-
             } else {
                 sleep(Duration::from_millis(1));
             }
