@@ -114,15 +114,15 @@ where
     fn emulation_loop<T>(&mut self) -> Result<(), anyhow::Error> {
         let mut timers_timer = Instant::now();
         let mut tick_timer = Instant::now();
-        let target_fps: f32 = 60.0;
+        let target_fps: u128 = 60;
         loop {
             // Handle sound and delay timer.
             self.handle_timers(&mut timers_timer);
 
             let now = Instant::now();
             let elapsed_time = now.duration_since(tick_timer);
-            let elapsed_seconds = elapsed_time.as_secs_f32();
-            if elapsed_seconds >= (1.0 / target_fps) {
+            let elapsed_ms = elapsed_time.as_millis();
+            if elapsed_ms >= (1000 / target_fps) {
                 for _ in 0..=7 {
                     // fetch instruction & decode it
                     let instruction = self.fetch_instruction()?;
