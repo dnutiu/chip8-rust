@@ -362,9 +362,10 @@ where
                 self.index_register = 0xF0 + (self.registers[vx as usize] & 0x0F) as u16;
             }
             ProcessorInstruction::BinaryCodedDecimalConversion(vx) => {
-                self.memory[self.index_register as usize] = vx / 100;
-                self.memory[self.index_register as usize + 1] = (vx / 10) % 10;
-                self.memory[self.index_register as usize + 2] = ((vx) % 100) % 10;
+                let number = self.registers[vx as usize];
+                self.memory[self.index_register as usize] = number / 100;
+                self.memory[self.index_register as usize + 1] = (number / 10) % 10;
+                self.memory[self.index_register as usize + 2] = ((number) % 100) % 10;
             }
             ProcessorInstruction::LoadMemory(vx) => {
                 for i in 0..=vx {
