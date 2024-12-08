@@ -8,7 +8,8 @@ use rand::Rng;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use std::time::Instant;
+use std::thread::sleep;
+use std::time::{Duration, Instant};
 
 /// Represents the display's width in pixels.
 const DISPLAY_WIDTH: usize = 64;
@@ -126,15 +127,20 @@ where
             let now = Instant::now();
             let elapsed_time = now.duration_since(tick_timer);
             let elapsed_seconds = elapsed_time.as_secs_f32();
-            if elapsed_seconds >= 1.0 / target_fps {
-                // fetch instruction & decode it
-                let instruction = self.fetch_instruction()?;
-                self.program_counter += 2;
+            if elapsed_seconds >= (1.0 / target_fps) {
+                for _ in 0..=7 {
+                    // fetch instruction & decode it
+                    let instruction = self.fetch_instruction()?;
+                    self.program_counter += 2;
 
-                // execute
-                self.execute_instruction(instruction)?;
+                    // execute
+                    self.execute_instruction(instruction)?;
+                }
 
                 tick_timer = Instant::now();
+
+            } else {
+                sleep(Duration::from_millis(1));
             }
         }
     }
@@ -223,7 +229,6 @@ where
                 } else {
                     self.registers[0xF] = 0;
                 }
-
                 self.display.render(&self.display_data);
             }
             ProcessorInstruction::Return => {
