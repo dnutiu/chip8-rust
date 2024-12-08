@@ -72,8 +72,11 @@ pub enum ProcessorInstruction {
     AddToIndex(u8),
     /// Sets the index register to the hexadecimal character in VX.
     FontCharacter(u8),
+    /// Converts the number in VX to 3 digits.
     BinaryCodedDecimalConversion(u8),
+    /// Stores the general purpose registers in memory at index register address.
     StoreMemory(u8),
+    /// Loads the general purpose registers from memory at index register address.
     LoadMemory(u8),
     /// Unknown instruction
     UnknownInstruction,

@@ -362,13 +362,21 @@ where
                 self.index_register = 0xF0 + (self.registers[vx as usize] & 0x0F) as u16;
             }
             ProcessorInstruction::BinaryCodedDecimalConversion(vx) => {
-                todo!("must implement")
+                self.memory[self.index_register as usize] = vx / 100;
+                self.memory[self.index_register as usize + 1] = (vx / 10) % 10;
+                self.memory[self.index_register as usize + 2] = ((vx) % 100) % 10;
             }
             ProcessorInstruction::LoadMemory(vx) => {
-                todo!("must implement")
+                for i in 0..=vx {
+                    let memory_index = (self.index_register + (i as u16)) as usize;
+                    self.registers[i as usize] = self.memory[memory_index];
+                }
             }
             ProcessorInstruction::StoreMemory(vx) => {
-                todo!("must implement")
+                for i in 0..=vx {
+                    let memory_index = (self.index_register + (i as u16)) as usize;
+                    self.memory[memory_index] = self.registers[i as usize];
+                }
             }
             _ => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);
