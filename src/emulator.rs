@@ -365,7 +365,7 @@ where
                 }
             }
             ProcessorInstruction::FontCharacter(vx) => {
-                self.index_register = 0xF0 + (self.registers[vx as usize] as u16) * 5u16;
+                self.index_register = 0xF0 + (self.registers[vx as usize] as u16 & 0xF) * 5u16;
             }
             ProcessorInstruction::BinaryCodedDecimalConversion(vx) => {
                 let number = self.registers[vx as usize];
