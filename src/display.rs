@@ -1,3 +1,4 @@
+use ratatui::layout::Rect;
 use ratatui::style::Color;
 use ratatui::symbols::Marker;
 use ratatui::widgets::canvas::Canvas;
@@ -96,7 +97,10 @@ impl Display for RatatuiDisplay {
                     .y_bounds([0.0, DISPLAY_HEIGHT as f64]);
 
                 // Render the canvas widget
-                frame.render_widget(canvas, frame.area());
+                frame.render_widget(
+                    canvas,
+                    Rect::new(0, 0, DISPLAY_WIDTH as u16, DISPLAY_HEIGHT as u16),
+                );
             })
             .expect("failed to draw");
     }
