@@ -365,7 +365,7 @@ where
                 }
             }
             ProcessorInstruction::FontCharacter(vx) => {
-                self.index_register = 0xF0 + (self.registers[vx as usize] & 0x0F) as u16;
+                self.index_register = 0xF0 + (self.registers[vx as usize] as u16) * 5u16;
             }
             ProcessorInstruction::BinaryCodedDecimalConversion(vx) => {
                 let number = self.registers[vx as usize];
@@ -386,13 +386,13 @@ where
                 }
             }
             ProcessorInstruction::GetKeyBlocking(_vx) => {
-                todo!("must implement")
+                //todo!("must implement")
             }
             ProcessorInstruction::SkipIfKeyIsPressed(_vx) => {
-                todo!("must implement")
+                //todo!("must implement")
             }
             ProcessorInstruction::SkipIfKeyIsNotPressed(_vx) => {
-                todo!("must implement")
+                //todo!("must implement")
             }
             _ => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);
