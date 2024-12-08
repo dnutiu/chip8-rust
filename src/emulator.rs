@@ -1,5 +1,6 @@
 use crate::display::Display;
 use crate::instruction::{Instruction, ProcessorInstruction};
+use crate::sound::SoundModule;
 use crate::stack::Stack;
 use anyhow::anyhow;
 use log::{debug, info, trace, warn};
@@ -38,9 +39,10 @@ const FONT_SPRITES: [u8; 80] = [
 ];
 
 /// Emulator emulates the Chip8 CPU.
-pub struct Emulator<D>
+pub struct Emulator<D, S>
 where
     D: Display,
+    S: SoundModule,
 {
     /// Memory represents the emulator's memory.
     memory: [u8; MEMORY_SIZE],
@@ -59,23 +61,27 @@ where
     stack_pointer: u8,
     /// The display_data holds all the data associated with the display
     display: D,
+    /// The sound module for making sounds.
+    sound_module: S,
     /// The stack of the emulator.
     stack: Stack<u16>,
     /// Holds the display data, each bit corresponds to a pixel.
     display_data: [bool; DISPLAY_WIDTH * DISPLAY_HEIGHT],
 }
 
-impl<D> Emulator<D>
+impl<D, S> Emulator<D, S>
 where
     D: Display,
+    S: SoundModule,
 {
     /// Creates a new `Emulator` instance.
     ///
-    pub fn new(display: D) -> Emulator<D> {
+    pub fn new(display: D, sound_module: S) -> Emulator<D, S> {
         let mut emulator = Emulator {
             memory: [0; MEMORY_SIZE],
             registers: [0; NUMBER_OF_REGISTERS],
             display,
+            sound_module,
             index_register: 0,
             program_counter: 0,
             delay_timer: 0,
@@ -153,7 +159,7 @@ where
 
     /// Should make an audible beep.
     fn do_beep(&mut self) {
-        // beep, for now
+        self.sound_module.beep();
     }
 
     /// Executes the instruction
@@ -435,11 +441,12 @@ where
 mod tests {
     use super::*;
     use crate::display::TerminalDisplay;
+    use crate::sound::TerminalSound;
     use pretty_assertions::assert_eq;
 
     #[test]
     fn test_load_font_data() {
-        let emulator = Emulator::new(TerminalDisplay::new());
+        let emulator = Emulator::new(TerminalDisplay::new(), TerminalSound);
         assert_eq!(emulator.memory[0xf0..0xf0 + 80], FONT_SPRITES)
     }
 
@@ -452,7 +459,7 @@ mod tests {
             .expect("Failed to read test ROM");
 
         // Test
-        let mut emulator = Emulator::new(TerminalDisplay::new());
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound);
         emulator
             .load_rom("roms/ibm-logo.ch8")
             .expect("failed to load ROM");
