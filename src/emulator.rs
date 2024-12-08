@@ -379,6 +379,15 @@ where
                     self.memory[memory_index] = self.registers[i as usize];
                 }
             }
+            ProcessorInstruction::GetKeyBlocking(_vx) => {
+                todo!("must implement")
+            }
+            ProcessorInstruction::SkipIfKeyIsPressed(_vx) => {
+                todo!("must implement")
+            }
+            ProcessorInstruction::SkipIfKeyIsNotPressed(_vx) => {
+                todo!("must implement")
+            }
             _ => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);
             }

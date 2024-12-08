@@ -78,6 +78,12 @@ pub enum ProcessorInstruction {
     StoreMemory(u8),
     /// Loads the general purpose registers from memory at index register address.
     LoadMemory(u8),
+    /// Blocks execution and waits for input. If a key is pressed it will be put in VX.
+    GetKeyBlocking(u8),
+    /// Skips one instruction if a key value stored in VX is pressed. Doesn't block execution.
+    SkipIfKeyIsPressed(u8),
+    /// Skips one instruction if a key value stored in VX is NOT pressed. Doesn't block execution.
+    SkipIfKeyIsNotPressed(u8),
     /// Unknown instruction
     UnknownInstruction,
 }
@@ -225,6 +231,15 @@ impl Instruction {
             }
             (0xF, _, 0x5, 0x5) => ProcessorInstruction::StoreMemory(Self::grab_first_nibble(data)),
             (0xF, _, 0x6, 0x5) => ProcessorInstruction::LoadMemory(Self::grab_first_nibble(data)),
+            (0xE, _, 0x9, 0xE) => {
+                ProcessorInstruction::SkipIfKeyIsPressed(Self::grab_first_nibble(data))
+            }
+            (0xE, _, 0xA, 0x1) => {
+                ProcessorInstruction::SkipIfKeyIsNotPressed(Self::grab_first_nibble(data))
+            }
+            (0xF, _, 0x0, 0xA) => {
+                ProcessorInstruction::GetKeyBlocking(Self::grab_first_nibble(data))
+            }
             // Unknown instruction
             _ => ProcessorInstruction::UnknownInstruction,
         }
@@ -568,6 +583,33 @@ mod tests {
         assert_eq!(
             instruction.processor_instruction,
             ProcessorInstruction::LoadMemory(0xA)
+        )
+    }
+
+    #[test]
+    fn test_instruction_skip_if_key_pressed() {
+        let instruction = Instruction::new([0xEF, 0x9E]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SkipIfKeyIsPressed(0xF)
+        )
+    }
+
+    #[test]
+    fn test_instruction_skip_if_key_not_pressed() {
+        let instruction = Instruction::new([0xEF, 0xA1]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::SkipIfKeyIsNotPressed(0xF)
+        )
+    }
+
+    #[test]
+    fn test_instruction_get_key() {
+        let instruction = Instruction::new([0xFE, 0x0A]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::GetKeyBlocking(0xE)
         )
     }
 }
