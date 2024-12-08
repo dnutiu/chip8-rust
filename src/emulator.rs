@@ -9,7 +9,6 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::time::Instant;
-use std::{thread, time};
 
 /// Represents the display's width in pixels.
 const DISPLAY_WIDTH: usize = 64;
@@ -117,25 +116,26 @@ where
 
     /// Emulation loop executes the fetch -> decode -> execute pipeline
     fn emulation_loop<T>(&mut self) -> Result<(), anyhow::Error> {
-        let mut start_time = Instant::now();
-        let mut last_program_counter = self.program_counter;
+        let mut timers_timer = Instant::now();
+        let mut tick_timer = Instant::now();
+        let target_fps: f32 = 60.0;
         loop {
-            self.handle_timers(&mut start_time);
+            // Handle sound and delay timer.
+            self.handle_timers(&mut timers_timer);
 
-            // fetch instruction & decode it
-            let instruction = self.fetch_instruction()?;
-            self.program_counter += 2;
+            let now = Instant::now();
+            let elapsed_time = now.duration_since(tick_timer);
+            let elapsed_seconds = elapsed_time.as_secs_f32();
+            if elapsed_seconds >= 1.0 / target_fps {
+                // fetch instruction & decode it
+                let instruction = self.fetch_instruction()?;
+                self.program_counter += 2;
 
-            if last_program_counter != self.program_counter {
-                debug!("PC={} {:04x}", self.program_counter, instruction);
+                // execute
+                self.execute_instruction(instruction)?;
+
+                tick_timer = Instant::now();
             }
-            last_program_counter = self.program_counter;
-
-            // execute
-            self.execute_instruction(instruction)?;
-
-            // insert some delay
-            thread::sleep(time::Duration::from_millis(10));
         }
     }
 
