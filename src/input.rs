@@ -41,7 +41,7 @@ impl InputModule for CrossTermInput {
         if !self.initialized {
             panic!("CrossTermInput needs to be constructed using ::new")
         }
-        if let Ok(true) = poll(Duration::from_millis(2)) {
+        if let Ok(true) = poll(Duration::from_millis(1)) {
             // It's guaranteed that read() won't block if `poll` returns `Ok(true)`
             let read_result = read();
 
@@ -50,7 +50,7 @@ impl InputModule for CrossTermInput {
                     Event::Key(key_event) => match key_event.code {
                         KeyCode::Esc => {
                             return Some(0xFF);
-                        },
+                        }
                         KeyCode::Char(character) => {
                             let lowercase_character = character.to_lowercase();
                             for char in lowercase_character {

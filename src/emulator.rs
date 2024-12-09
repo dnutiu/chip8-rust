@@ -405,14 +405,28 @@ where
                     self.memory[memory_index] = self.registers[i as usize];
                 }
             }
-            ProcessorInstruction::GetKeyBlocking(_vx) => {
-                //todo!("must implement")
+            ProcessorInstruction::GetKeyBlocking(vx) => {
+                if let Some(key) = self.last_key_pressed {
+                    self.registers[vx as usize] = key;
+                } else {
+                    self.program_counter -= 2;
+                }
             }
-            ProcessorInstruction::SkipIfKeyIsPressed(_vx) => {
-                //todo!("must implement")
+            ProcessorInstruction::SkipIfKeyIsPressed(vx) => {
+                if let Some(key) = self.last_key_pressed {
+                    if self.registers[vx as usize] == key {
+                        self.program_counter += 2;
+                    }
+                }
             }
-            ProcessorInstruction::SkipIfKeyIsNotPressed(_vx) => {
-                //todo!("must implement")
+            ProcessorInstruction::SkipIfKeyIsNotPressed(vx) => {
+                if let Some(key) = self.last_key_pressed {
+                    if self.registers[vx as usize] != key {
+                        self.program_counter += 2;
+                    }
+                } else {
+                    self.program_counter += 2;
+                }
             }
             _ => {
                 warn!("Unknown instruction: {:04x}, skipping.", instruction);
