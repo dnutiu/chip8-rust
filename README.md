@@ -43,4 +43,6 @@ The project is written in Rust and it's organized in the following modules:
 ---
 Made with ❤️ by [NucuLabs.dev](https://blog.nuculabs.dev)
 
-Follow me on 🦋 and let's chat: [@nuculabs.dev](https://bsky.app/profile/nuculabs.dev)
+Follow me on 🦋 or 🐘 and let's chat: 
+- BlueSky: [@nuculabs.dev](https://bsky.app/profile/nuculabs.dev)
+- Mastodon: [@nuculabs](https://mastodon.social/@nuculabs)

@@ -115,11 +115,12 @@ where
         let mut tick_timer = Instant::now();
         let target_fps: u128 = 60;
         loop {
-
             let now = Instant::now();
             let elapsed_time = now.duration_since(tick_timer);
             let elapsed_ms = elapsed_time.as_millis();
             if elapsed_ms >= (1000 / target_fps) {
+                self.handle_input();
+
                 // Handle sound and delay timer.
                 self.handle_timers();
 
@@ -151,6 +152,9 @@ where
             self.do_beep()
         }
     }
+
+    /// Handle the input
+    fn handle_input(&mut self) {}
 
     /// Should make an audible beep.
     fn do_beep(&mut self) {
