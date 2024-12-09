@@ -164,7 +164,18 @@ where
 
     /// Handle the input
     fn handle_input(&mut self) {
-        self.last_key_pressed = self.input_module.get_key_pressed();
+        if let Some(key_pressed) = self.input_module.get_key_pressed() {
+            if key_pressed == 0xFF {
+                // Exit requested
+                self.display.clear();
+                println!("Thank you for playing! See you next time! :-)");
+                std::process::exit(0);
+            } else {
+                self.last_key_pressed = Option::from((key_pressed & 0xF) as u8)
+            }
+        } else {
+            self.last_key_pressed = None;
+        }
     }
 
     /// Should make an audible beep.

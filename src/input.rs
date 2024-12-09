@@ -6,14 +6,14 @@ use std::time::Duration;
 pub trait InputModule {
     /// Returns the key value of the corresponding pressed key.
     /// None if no key is pressed.
-    fn get_key_pressed(&mut self) -> Option<u8>;
+    fn get_key_pressed(&mut self) -> Option<u16>;
 }
 
 /// NoInput always returns none when queried for input.
 pub struct NoInput;
 
 impl InputModule for NoInput {
-    fn get_key_pressed(&mut self) -> Option<u8> {
+    fn get_key_pressed(&mut self) -> Option<u16> {
         None
     }
 }
@@ -37,7 +37,7 @@ impl Default for CrossTermInput {
 }
 
 impl InputModule for CrossTermInput {
-    fn get_key_pressed(&mut self) -> Option<u8> {
+    fn get_key_pressed(&mut self) -> Option<u16> {
         if !self.initialized {
             panic!("CrossTermInput needs to be constructed using ::new")
         }
@@ -48,60 +48,31 @@ impl InputModule for CrossTermInput {
             if let Ok(event) = read_result {
                 match event {
                     Event::Key(key_event) => match key_event.code {
+                        KeyCode::Esc => {
+                            return Some(0xFF);
+                        },
                         KeyCode::Char(character) => {
                             let lowercase_character = character.to_lowercase();
                             for char in lowercase_character {
-                                match char {
-                                    '1' => {
-                                        return Some(1);
-                                    }
-                                    '2' => {
-                                        return Some(2);
-                                    }
-                                    '3' => {
-                                        return Some(3);
-                                    }
-                                    '4' => {
-                                        return Some(0xC);
-                                    }
-                                    'q' => {
-                                        return Some(4);
-                                    }
-                                    'w' => {
-                                        return Some(5);
-                                    }
-                                    'e' => {
-                                        return Some(6);
-                                    }
-                                    'r' => {
-                                        return Some(0xD);
-                                    }
-                                    'a' => {
-                                        return Some(7);
-                                    }
-                                    's' => {
-                                        return Some(8);
-                                    }
-                                    'd' => {
-                                        return Some(9);
-                                    }
-                                    'f' => {
-                                        return Some(0xE);
-                                    }
-                                    'z' => {
-                                        return Some(0xA);
-                                    }
-                                    'x' => {
-                                        return Some(0);
-                                    }
-                                    'c' => {
-                                        return Some(0xB);
-                                    }
-                                    'v' => {
-                                        return Some(0xF);
-                                    }
-                                    _ => {}
-                                }
+                                return match char {
+                                    '1' => Some(1),
+                                    '2' => Some(2),
+                                    '3' => Some(3),
+                                    '4' => Some(0xC),
+                                    'q' => Some(4),
+                                    'w' => Some(5),
+                                    'e' => Some(6),
+                                    'r' => Some(0xD),
+                                    'a' => Some(7),
+                                    's' => Some(8),
+                                    'd' => Some(9),
+                                    'f' => Some(0xE),
+                                    'z' => Some(0xA),
+                                    'x' => Some(0),
+                                    'c' => Some(0xB),
+                                    'v' => Some(0xF),
+                                    _ => None,
+                                };
                             }
                         }
                         _ => {}
