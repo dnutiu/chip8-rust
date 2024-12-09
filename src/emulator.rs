@@ -112,17 +112,17 @@ where
 
     /// Emulation loop executes the fetch -> decode -> execute pipeline
     fn emulation_loop<T>(&mut self) -> Result<(), anyhow::Error> {
-        let mut timers_timer = Instant::now();
         let mut tick_timer = Instant::now();
         let target_fps: u128 = 60;
         loop {
-            // Handle sound and delay timer.
-            self.handle_timers(&mut timers_timer);
 
             let now = Instant::now();
             let elapsed_time = now.duration_since(tick_timer);
             let elapsed_ms = elapsed_time.as_millis();
             if elapsed_ms >= (1000 / target_fps) {
+                // Handle sound and delay timer.
+                self.handle_timers();
+
                 for _ in 0..=7 {
                     // fetch instruction & decode it
                     let instruction = self.fetch_instruction()?;
@@ -140,20 +140,15 @@ where
     }
 
     /// Handles the timers logic.
-    fn handle_timers(&mut self, start_time: &mut Instant) {
-        // Handle 60hz timers
-        let elapsed_time = start_time.elapsed().as_micros();
-        // 16667 us which is 1/60 of a second
-        if elapsed_time > 16667 {
-            if self.delay_timer > 0 {
-                self.delay_timer -= 1
-            }
-            if self.delay_timer > 0 {
-                self.delay_timer -= 1
-            } else {
-                self.do_beep()
-            }
-            *start_time = Instant::now()
+    fn handle_timers(&mut self) {
+        // Handle timers
+        if self.delay_timer > 0 {
+            self.delay_timer -= 1
+        }
+        if self.delay_timer > 0 {
+            self.delay_timer -= 1
+        } else {
+            self.do_beep()
         }
     }
 
