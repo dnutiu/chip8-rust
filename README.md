@@ -29,14 +29,23 @@ The project is written in Rust and it's organized in the following modules:
 
 ```shell
 .
-├── display.rs # The screen / display module.
-├── emulator.rs # The emulator logic which emulates the CPU.
-├── input.rs # The input logic.
-├── instruction.rs # The instruction decoding logic.
-├── main.rs # The main file. This is the entrypoint.
-├── sound.rs # The sound module.
-└── stack.rs # A stack implementation.
-
+├── Cargo.lock
+├── Cargo.toml
+├── LICENSE
+├── proprietary_roms # Roms which I have no permission to share here.
+├── README.md
+├── roms
+│   ├── 1-chip8-logo.ch8 # Chip8 Logo Test ROM
+│   ├── 3-corax+.ch8 # Corax+ Instructions Test ROM
+│   └── ibm-logo.ch8 # IBM Logo Test ROM
+├── src
+│   ├── display.rs # The screen / display module.
+│   ├── emulator.rs # The emulator logic which emulates the CPU.
+│   ├── input.rs # The input logic.
+│   ├── instruction.rs # The instruction decoding logic.
+│   ├── main.rs # The main file. This is the entrypoint.
+│   ├── sound.rs # The sound module.
+│   └── stack.rs # A stack implementation.
 ```
 
 

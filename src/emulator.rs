@@ -1,5 +1,6 @@
 use crate::display::Display;
 use crate::display::{DISPLAY_HEIGHT, DISPLAY_WIDTH};
+use crate::input::InputModule;
 use crate::instruction::{Instruction, ProcessorInstruction};
 use crate::sound::SoundModule;
 use crate::stack::Stack;
@@ -34,10 +35,11 @@ const FONT_SPRITES: [u8; 80] = [
 ];
 
 /// Emulator emulates the Chip8 CPU.
-pub struct Emulator<D, S>
+pub struct Emulator<D, S, I>
 where
     D: Display,
     S: SoundModule,
+    I: InputModule,
 {
     /// Memory represents the emulator's memory.
     memory: [u8; MEMORY_SIZE],
@@ -58,25 +60,28 @@ where
     display: D,
     /// The sound module for making sounds.
     sound_module: S,
+    /// The module responsible for receiving user input.
+    input_module: I,
     /// The stack of the emulator.
     stack: Stack<u16>,
     /// Holds the display data, each bit corresponds to a pixel.
     display_data: [bool; DISPLAY_WIDTH * DISPLAY_HEIGHT],
+    /// Tracks the last key pressed by the user.
+    last_key_pressed: Option<u8>,
 }
 
-impl<D, S> Emulator<D, S>
+impl<D, S, I> Emulator<D, S, I>
 where
     D: Display,
     S: SoundModule,
+    I: InputModule,
 {
     /// Creates a new `Emulator` instance.
     ///
-    pub fn new(display: D, sound_module: S) -> Emulator<D, S> {
+    pub fn new(display: D, sound_module: S, input_module: I) -> Emulator<D, S, I> {
         let mut emulator = Emulator {
             memory: [0; MEMORY_SIZE],
             registers: [0; NUMBER_OF_REGISTERS],
-            display,
-            sound_module,
             index_register: 0,
             program_counter: 0,
             delay_timer: 0,
@@ -84,6 +89,10 @@ where
             stack_pointer: 0,
             stack: Stack::new(),
             display_data: [false; DISPLAY_WIDTH * DISPLAY_HEIGHT],
+            display,
+            sound_module,
+            input_module,
+            last_key_pressed: None,
         };
 
         emulator.load_font_data();
@@ -154,7 +163,9 @@ where
     }
 
     /// Handle the input
-    fn handle_input(&mut self) {}
+    fn handle_input(&mut self) {
+        self.last_key_pressed = self.input_module.get_key_pressed();
+    }
 
     /// Should make an audible beep.
     fn do_beep(&mut self) {
@@ -439,12 +450,13 @@ where
 mod tests {
     use super::*;
     use crate::display::TerminalDisplay;
+    use crate::input::NoInput;
     use crate::sound::TerminalSound;
     use pretty_assertions::assert_eq;
 
     #[test]
     fn test_load_font_data() {
-        let emulator = Emulator::new(TerminalDisplay::new(), TerminalSound);
+        let emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
         assert_eq!(emulator.memory[0xf0..0xf0 + 80], FONT_SPRITES)
     }
 
@@ -457,7 +469,7 @@ mod tests {
             .expect("Failed to read test ROM");
 
         // Test
-        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound);
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
         emulator
             .load_rom("roms/ibm-logo.ch8")
             .expect("failed to load ROM");
