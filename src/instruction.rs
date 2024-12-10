@@ -33,23 +33,23 @@ pub enum ProcessorInstruction {
     /// Set VX to the value of VY
     Set { vx: u8, vy: u8 },
     /// Or VX with VY and store in VX.
-    BinaryOr(u8, u8),
+    BinaryOr { vx: u8, vy: u8 },
     /// And VX with VY and store in VX.
-    BinaryAnd(u8, u8),
+    BinaryAnd { vx: u8, vy: u8 },
     /// XOR VX with VY and store in VX.
-    BinaryXor(u8, u8),
+    BinaryXor { vx: u8, vy: u8 },
     /// Add VX with VY and store in VX, if addition overflows set the carry flag 0xVF
-    Add(u8, u8),
+    Add { vx: u8, vy: u8 },
     /// Subtract VX from VY and set to VX. VX = VX - VY. Affects the carry flag.
-    SubtractVX(u8, u8),
+    SubtractVX { vx: u8, vy: u8 },
     /// Subtract VY from VX and set to VX. VX = VY - VX. Affects the carry flag.
-    SubtractVY(u8, u8),
+    SubtractVY { vx: u8, vy: u8 },
     /// Set VX = VY >> 1. VF needs to be set to the bit that is shifted out.
     /// This instruction has different behaviour on CHIP-48 and SUPER-CHIP.
-    ShiftRight(u8, u8),
+    ShiftRight { vx: u8, vy: u8 },
     /// Set VX = VY << 1 VF needs to be set to the bit that is shifted out.
     /// This instruction has different behaviour on CHIP-48 and SUPER-CHIP.
-    ShiftLeft(u8, u8),
+    ShiftLeft { vx: u8, vy: u8 },
     /// Jumps to the address and adds V0 offset.
     JumpWithOffset(u16),
     /// Generates a random number ANDed with the data and stores it in VX.
@@ -166,38 +166,38 @@ impl Instruction {
                 vx: Self::grab_first_nibble(data),
                 vy: Self::grab_middle_nibble(data),
             },
-            (0x8, _, _, 0x1) => ProcessorInstruction::BinaryOr(
-                Self::grab_first_nibble(data),
-                Self::grab_middle_nibble(data),
-            ),
-            (0x8, _, _, 0x2) => ProcessorInstruction::BinaryAnd(
-                Self::grab_first_nibble(data),
-                Self::grab_middle_nibble(data),
-            ),
-            (0x8, _, _, 0x3) => ProcessorInstruction::BinaryXor(
-                Self::grab_first_nibble(data),
-                Self::grab_middle_nibble(data),
-            ),
-            (0x8, _, _, 0x4) => ProcessorInstruction::Add(
-                Self::grab_first_nibble(data),
-                Self::grab_middle_nibble(data),
-            ),
-            (0x8, _, _, 0x5) => ProcessorInstruction::SubtractVX(
-                Self::grab_first_nibble(data),
-                Self::grab_middle_nibble(data),
-            ),
-            (0x8, _, _, 0x7) => ProcessorInstruction::SubtractVY(
-                Self::grab_first_nibble(data),
-                Self::grab_middle_nibble(data),
-            ),
-            (0x8, _, _, 0x6) => ProcessorInstruction::ShiftRight(
-                Self::grab_first_nibble(data),
-                Self::grab_middle_nibble(data),
-            ),
-            (0x8, _, _, 0xE) => ProcessorInstruction::ShiftLeft(
-                Self::grab_first_nibble(data),
-                Self::grab_middle_nibble(data),
-            ),
+            (0x8, _, _, 0x1) => ProcessorInstruction::BinaryOr {
+                vx: Self::grab_first_nibble(data),
+                vy: Self::grab_middle_nibble(data),
+            },
+            (0x8, _, _, 0x2) => ProcessorInstruction::BinaryAnd {
+                vx: Self::grab_first_nibble(data),
+                vy: Self::grab_middle_nibble(data),
+            },
+            (0x8, _, _, 0x3) => ProcessorInstruction::BinaryXor {
+                vx: Self::grab_first_nibble(data),
+                vy: Self::grab_middle_nibble(data),
+            },
+            (0x8, _, _, 0x4) => ProcessorInstruction::Add {
+                vx: Self::grab_first_nibble(data),
+                vy: Self::grab_middle_nibble(data),
+            },
+            (0x8, _, _, 0x5) => ProcessorInstruction::SubtractVX {
+                vx: Self::grab_first_nibble(data),
+                vy: Self::grab_middle_nibble(data),
+            },
+            (0x8, _, _, 0x7) => ProcessorInstruction::SubtractVY {
+                vx: Self::grab_first_nibble(data),
+                vy: Self::grab_middle_nibble(data),
+            },
+            (0x8, _, _, 0x6) => ProcessorInstruction::ShiftRight {
+                vx: Self::grab_first_nibble(data),
+                vy: Self::grab_middle_nibble(data),
+            },
+            (0x8, _, _, 0xE) => ProcessorInstruction::ShiftLeft {
+                vx: Self::grab_first_nibble(data),
+                vy: Self::grab_middle_nibble(data),
+            },
             (0xB, _, _, _) => ProcessorInstruction::JumpWithOffset(Self::grab_inner_data(data)),
             (0xC, _, _, _) => ProcessorInstruction::GenerateRandomNumber(
                 Self::grab_first_nibble(data),
@@ -432,7 +432,7 @@ mod tests {
         let instruction = Instruction::new([0x81, 0xF1]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::BinaryOr(1, 0xF)
+            ProcessorInstruction::BinaryOr { vx: 1, vy: 0xF }
         )
     }
 
@@ -441,7 +441,7 @@ mod tests {
         let instruction = Instruction::new([0x81, 0xF2]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::BinaryAnd(1, 0xF)
+            ProcessorInstruction::BinaryAnd { vx: 1, vy: 0xF }
         )
     }
 
@@ -450,7 +450,7 @@ mod tests {
         let instruction = Instruction::new([0x81, 0xF3]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::BinaryXor(1, 0xF)
+            ProcessorInstruction::BinaryXor { vx: 1, vy: 0xF }
         )
     }
 
@@ -459,7 +459,7 @@ mod tests {
         let instruction = Instruction::new([0x81, 0xF4]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::Add(1, 0xF)
+            ProcessorInstruction::Add { vx: 1, vy: 0xF }
         )
     }
 
@@ -468,7 +468,7 @@ mod tests {
         let instruction = Instruction::new([0x8E, 0xF5]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SubtractVX(0xE, 0xF)
+            ProcessorInstruction::SubtractVX { vx: 0xE, vy: 0xF }
         )
     }
 
@@ -477,7 +477,7 @@ mod tests {
         let instruction = Instruction::new([0x8E, 0xF7]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SubtractVY(0xE, 0xF)
+            ProcessorInstruction::SubtractVY { vx: 0xE, vy: 0xF }
         )
     }
 
@@ -486,7 +486,7 @@ mod tests {
         let instruction = Instruction::new([0x81, 0x1E]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::ShiftLeft(1, 1)
+            ProcessorInstruction::ShiftLeft { vx: 1, vy: 1 }
         )
     }
 
@@ -495,7 +495,7 @@ mod tests {
         let instruction = Instruction::new([0x81, 0x26]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::ShiftRight(1, 2)
+            ProcessorInstruction::ShiftRight { vx: 1, vy: 2 }
         )
     }
 

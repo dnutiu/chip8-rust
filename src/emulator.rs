@@ -274,19 +274,19 @@ where
                 trace!("Set VX={vx:04x} VY={vy:04x}");
                 self.registers[vx as usize] = self.registers[vy as usize];
             }
-            ProcessorInstruction::BinaryOr(vx, vy) => {
+            ProcessorInstruction::BinaryOr { vx, vy } => {
                 trace!("BinaryOr VX={vx:04x} VY={vy:04x}");
                 self.registers[vx as usize] |= self.registers[vy as usize]
             }
-            ProcessorInstruction::BinaryAnd(vx, vy) => {
+            ProcessorInstruction::BinaryAnd { vx, vy } => {
                 trace!("BinaryAnd VX={vx:04x} VY={vy:04x}");
                 self.registers[vx as usize] &= self.registers[vy as usize]
             }
-            ProcessorInstruction::BinaryXor(vx, vy) => {
+            ProcessorInstruction::BinaryXor { vx, vy } => {
                 trace!("BinaryXor VX={vx:04x} VY={vy:04x}");
                 self.registers[vx as usize] ^= self.registers[vy as usize]
             }
-            ProcessorInstruction::Add(vx, vy) => {
+            ProcessorInstruction::Add { vx, vy } => {
                 trace!("Add VX={vx:04x} VY={vy:04x}");
                 let (result, overflow) =
                     self.registers[vx as usize].overflowing_add(self.registers[vy as usize]);
@@ -298,7 +298,7 @@ where
                     self.registers[0xF] = 0;
                 }
             }
-            ProcessorInstruction::SubtractVX(vx, vy) => {
+            ProcessorInstruction::SubtractVX { vx, vy } => {
                 trace!("SubtractVX VX={vx:04x} VY={vy:04x}");
                 if self.registers[vx as usize] > self.registers[vy as usize] {
                     self.registers[0xF] = 1
@@ -310,7 +310,7 @@ where
                     self.registers[vx as usize].overflowing_sub(self.registers[vy as usize]);
                 self.registers[vx as usize] = result;
             }
-            ProcessorInstruction::SubtractVY(vx, vy) => {
+            ProcessorInstruction::SubtractVY { vx, vy } => {
                 trace!("SubtractVY VX={vx:04x} VY={vy:04x}");
                 if self.registers[vy as usize] > self.registers[vx as usize] {
                     self.registers[0xF] = 1
@@ -322,12 +322,12 @@ where
                     self.registers[vy as usize].overflowing_sub(self.registers[vx as usize]);
                 self.registers[vx as usize] = result;
             }
-            ProcessorInstruction::ShiftLeft(vx, vy) => {
+            ProcessorInstruction::ShiftLeft { vx, vy } => {
                 trace!("ShiftLeft VX={vx:04x} VY={vy:04x}");
                 self.registers[0xF] = (self.registers[vx as usize] >> 7) & 1;
                 self.registers[vx as usize] <<= 1;
             }
-            ProcessorInstruction::ShiftRight(vx, vy) => {
+            ProcessorInstruction::ShiftRight { vx, vy } => {
                 trace!("ShiftRight VX={vx:04x} VY={vy:04x}");
                 self.registers[0xF] = self.registers[vx as usize] & 0x1;
                 self.registers[vx as usize] >>= 1;
