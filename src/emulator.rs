@@ -270,7 +270,7 @@ where
                 // Set PC to subroutine address
                 self.program_counter = address;
             }
-            ProcessorInstruction::Set(vx, vy) => {
+            ProcessorInstruction::Set { vx, vy } => {
                 trace!("Set VX={vx:04x} VY={vy:04x}");
                 self.registers[vx as usize] = self.registers[vy as usize];
             }

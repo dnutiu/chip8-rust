@@ -31,7 +31,7 @@ pub enum ProcessorInstruction {
     /// Pops the stack and sets the PC
     Return,
     /// Set VX to the value of VY
-    Set(u8, u8),
+    Set { vx: u8, vy: u8 },
     /// Or VX with VY and store in VX.
     BinaryOr(u8, u8),
     /// And VX with VY and store in VX.
@@ -162,10 +162,10 @@ impl Instruction {
             (0x2, _, _, _) => ProcessorInstruction::Call {
                 address: Self::grab_inner_data(data),
             },
-            (0x8, _, _, 0x0) => ProcessorInstruction::Set(
-                Self::grab_first_nibble(data),
-                Self::grab_middle_nibble(data),
-            ),
+            (0x8, _, _, 0x0) => ProcessorInstruction::Set {
+                vx: Self::grab_first_nibble(data),
+                vy: Self::grab_middle_nibble(data),
+            },
             (0x8, _, _, 0x1) => ProcessorInstruction::BinaryOr(
                 Self::grab_first_nibble(data),
                 Self::grab_middle_nibble(data),
@@ -423,7 +423,7 @@ mod tests {
         let instruction = Instruction::new([0x81, 0x40]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::Set(1, 4)
+            ProcessorInstruction::Set { vx: 1, vy: 4 }
         )
     }
 
