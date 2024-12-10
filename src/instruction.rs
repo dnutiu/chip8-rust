@@ -651,7 +651,7 @@ mod tests {
         let instruction = Instruction::new([0xFE, 0x0A]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::GetKeyBlocking { vx: 0xF }
+            ProcessorInstruction::GetKeyBlocking { vx: 0xE }
         )
     }
 }
