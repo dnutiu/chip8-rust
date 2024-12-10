@@ -27,7 +27,7 @@ pub enum ProcessorInstruction {
     /// Draws to the screen.
     Draw { vx: u8, vy: u8, rows: u8 },
     /// Call sets PC to the address and saves the return address on the stack
-    Call(u16),
+    Call { address: u16 },
     /// Pops the stack and sets the PC
     Return,
     /// Set VX to the value of VY
@@ -159,7 +159,9 @@ impl Instruction {
                 }
             }
             (0x0, 0x0, 0xE, 0xE) => ProcessorInstruction::Return,
-            (0x2, _, _, _) => ProcessorInstruction::Call(Self::grab_inner_data(data)),
+            (0x2, _, _, _) => ProcessorInstruction::Call {
+                address: Self::grab_inner_data(data),
+            },
             (0x8, _, _, 0x0) => ProcessorInstruction::Set(
                 Self::grab_first_nibble(data),
                 Self::grab_middle_nibble(data),
@@ -343,7 +345,7 @@ mod tests {
         let instruction = Instruction::new([0x2A, 0xBC]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::Call(0xABC)
+            ProcessorInstruction::Call { address: 0xABC }
         )
     }
 

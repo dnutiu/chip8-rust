@@ -263,7 +263,7 @@ where
                 trace!("Return to {value:04x}");
                 self.program_counter = value;
             }
-            ProcessorInstruction::Call(address) => {
+            ProcessorInstruction::Call { address } => {
                 trace!("Call {address:04x}");
                 // Save PC to the stack
                 self.stack.push(self.program_counter);
