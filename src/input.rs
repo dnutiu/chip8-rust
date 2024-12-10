@@ -10,6 +10,7 @@ pub trait InputModule {
 }
 
 /// NoInput always returns none when queried for input.
+#[derive(Clone)]
 pub struct NoInput;
 
 impl InputModule for NoInput {
@@ -19,6 +20,7 @@ impl InputModule for NoInput {
 }
 
 /// CrossTermInput implements input events via the crossterm crate.
+#[derive(Clone)]
 pub struct CrossTermInput {
     initialized: bool,
 }
@@ -41,7 +43,7 @@ impl InputModule for CrossTermInput {
         if !self.initialized {
             panic!("CrossTermInput needs to be constructed using ::new")
         }
-        if let Ok(true) = poll(Duration::from_millis(1)) {
+        if let Ok(true) = poll(Duration::from_millis(100)) {
             // It's guaranteed that read() won't block if `poll` returns `Ok(true)`
             let read_result = read();
 

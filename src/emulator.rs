@@ -10,6 +10,9 @@ use rand::Rng;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+use std::sync::mpsc;
+use std::sync::mpsc::{Receiver, Sender};
+use std::thread;
 use std::thread::sleep;
 use std::time::{Duration, Instant};
 
@@ -72,9 +75,9 @@ where
 
 impl<D, S, I> Emulator<D, S, I>
 where
-    D: Display,
-    S: SoundModule,
-    I: InputModule,
+    D: Display + 'static,
+    S: SoundModule + 'static,
+    I: InputModule + Clone + Send + 'static,
 {
     /// Creates a new `Emulator` instance.
     ///
@@ -123,12 +126,21 @@ where
     fn emulation_loop<T>(&mut self) -> Result<(), anyhow::Error> {
         let mut tick_timer = Instant::now();
         let target_fps: u128 = 60;
+
+        let (tx, rx): (Sender<u16>, Receiver<u16>) = mpsc::channel();
+        let mut input_module_clone = self.input_module.clone();
+        thread::spawn(move || loop {
+            let key = input_module_clone.get_key_pressed();
+            if let Some(some_key) = key {
+                let _ = tx.send(some_key);
+            }
+        });
         loop {
             let now = Instant::now();
             let elapsed_time = now.duration_since(tick_timer);
             let elapsed_ms = elapsed_time.as_millis();
             if elapsed_ms >= (1000 / target_fps) {
-                self.handle_input();
+                self.handle_input(&rx);
 
                 // Handle sound and delay timer.
                 self.handle_timers();
@@ -163,8 +175,9 @@ where
     }
 
     /// Handle the input
-    fn handle_input(&mut self) {
-        if let Some(key_pressed) = self.input_module.get_key_pressed() {
+    fn handle_input(&mut self, receiver: &Receiver<u16>) {
+        let received_input = receiver.try_recv();
+        if let Ok(key_pressed) = received_input {
             if key_pressed == 0xFF {
                 // Exit requested
                 self.display.clear();
