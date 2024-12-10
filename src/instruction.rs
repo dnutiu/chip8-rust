@@ -51,7 +51,7 @@ pub enum ProcessorInstruction {
     /// This instruction has different behaviour on CHIP-48 and SUPER-CHIP.
     ShiftLeft { vx: u8, vy: u8 },
     /// Jumps to the address and adds V0 offset.
-    JumpWithOffset(u16),
+    JumpWithOffset { address: u16 },
     /// Generates a random number ANDed with the data and stores it in VX.
     GenerateRandomNumber(u8, u8),
     /// Skips the next instruction if VX is equal to data.
@@ -198,7 +198,9 @@ impl Instruction {
                 vx: Self::grab_first_nibble(data),
                 vy: Self::grab_middle_nibble(data),
             },
-            (0xB, _, _, _) => ProcessorInstruction::JumpWithOffset(Self::grab_inner_data(data)),
+            (0xB, _, _, _) => ProcessorInstruction::JumpWithOffset {
+                address: Self::grab_inner_data(data),
+            },
             (0xC, _, _, _) => ProcessorInstruction::GenerateRandomNumber(
                 Self::grab_first_nibble(data),
                 Self::grab_last_byte(data),
@@ -513,7 +515,7 @@ mod tests {
         let instruction = Instruction::new([0xBA, 0xBC]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::JumpWithOffset(0xABC)
+            ProcessorInstruction::JumpWithOffset { address: 0xABC }
         )
     }
 

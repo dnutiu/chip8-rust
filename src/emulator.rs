@@ -335,7 +335,7 @@ where
                 self.registers[0xF] = self.registers[vx as usize] & 0x1;
                 self.registers[vx as usize] >>= 1;
             }
-            ProcessorInstruction::JumpWithOffset(address) => {
+            ProcessorInstruction::JumpWithOffset { address } => {
                 let offset = self.registers[0x0];
                 trace!("Jump With offset Address={address:04x} Offset={offset:04x}");
 
