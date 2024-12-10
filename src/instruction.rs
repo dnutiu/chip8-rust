@@ -23,7 +23,7 @@ pub enum ProcessorInstruction {
     /// Adds the value to the register
     AddValueToRegister { register: u8, value: u8 },
     /// Sets the index register
-    SetIndexRegister(u16),
+    SetIndexRegister { data: u16 },
     /// Draws to the screen.
     Draw(u8, u8, u8),
     /// Call sets PC to the address and saves the return address on the stack
@@ -146,7 +146,9 @@ impl Instruction {
                 }
             }
             // Set index register
-            (0xA, _, _, _) => ProcessorInstruction::SetIndexRegister(Self::grab_inner_data(data)),
+            (0xA, _, _, _) => ProcessorInstruction::SetIndexRegister {
+                data: Self::grab_inner_data(data),
+            },
             // Draw on screen
             (0xD, _, _, _) => {
                 // DXYN
@@ -500,7 +502,7 @@ mod tests {
         let instruction = Instruction::new([0xAA, 0xBC]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SetIndexRegister(0xABC)
+            ProcessorInstruction::SetIndexRegister { data: 0xABC }
         )
     }
 

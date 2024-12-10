@@ -217,7 +217,7 @@ where
                 let (result, _) = self.registers[register as usize].overflowing_add(value);
                 self.registers[register as usize] = result;
             }
-            ProcessorInstruction::SetIndexRegister(data) => {
+            ProcessorInstruction::SetIndexRegister { data } => {
                 trace!("Set index register to data {:04x}", data);
                 self.index_register = data;
             }
