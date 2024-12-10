@@ -408,13 +408,13 @@ where
                 self.memory[self.index_register as usize + 1] = (number / 10) % 10;
                 self.memory[self.index_register as usize + 2] = ((number) % 100) % 10;
             }
-            ProcessorInstruction::LoadMemory(vx) => {
+            ProcessorInstruction::LoadMemory { vx } => {
                 for i in 0..=vx {
                     let memory_index = (self.index_register + (i as u16)) as usize;
                     self.registers[i as usize] = self.memory[memory_index];
                 }
             }
-            ProcessorInstruction::StoreMemory(vx) => {
+            ProcessorInstruction::StoreMemory { vx } => {
                 for i in 0..=vx {
                     let memory_index = (self.index_register + (i as u16)) as usize;
                     self.memory[memory_index] = self.registers[i as usize];

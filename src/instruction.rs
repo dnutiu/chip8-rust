@@ -75,9 +75,9 @@ pub enum ProcessorInstruction {
     /// Converts the number in VX to 3 digits.
     BinaryCodedDecimalConversion { vx: u8 },
     /// Stores the general purpose registers in memory at index register address.
-    StoreMemory(u8),
+    StoreMemory { vx: u8 },
     /// Loads the general purpose registers from memory at index register address.
-    LoadMemory(u8),
+    LoadMemory { vx: u8 },
     /// Blocks execution and waits for input. If a key is pressed it will be put in VX.
     GetKeyBlocking(u8),
     /// Skips one instruction if a key value stored in VX is pressed. Doesn't block execution.
@@ -239,8 +239,12 @@ impl Instruction {
             (0xF, _, 0x3, 0x3) => ProcessorInstruction::BinaryCodedDecimalConversion {
                 vx: Self::grab_first_nibble(data),
             },
-            (0xF, _, 0x5, 0x5) => ProcessorInstruction::StoreMemory(Self::grab_first_nibble(data)),
-            (0xF, _, 0x6, 0x5) => ProcessorInstruction::LoadMemory(Self::grab_first_nibble(data)),
+            (0xF, _, 0x5, 0x5) => ProcessorInstruction::StoreMemory {
+                vx: Self::grab_first_nibble(data),
+            },
+            (0xF, _, 0x6, 0x5) => ProcessorInstruction::LoadMemory {
+                vx: Self::grab_first_nibble(data),
+            },
             (0xE, _, 0x9, 0xE) => {
                 ProcessorInstruction::SkipIfKeyIsPressed(Self::grab_first_nibble(data))
             }
@@ -611,7 +615,7 @@ mod tests {
         let instruction = Instruction::new([0xFA, 0x55]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::StoreMemory(0xA)
+            ProcessorInstruction::StoreMemory { vx: 0xA }
         )
     }
 
@@ -620,7 +624,7 @@ mod tests {
         let instruction = Instruction::new([0xFA, 0x65]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::LoadMemory(0xA)
+            ProcessorInstruction::LoadMemory { vx: 0xA }
         )
     }
 
