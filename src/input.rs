@@ -1,5 +1,5 @@
 use crossterm::event::{poll, read, Event, KeyCode};
-use crossterm::terminal::enable_raw_mode;
+use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use std::time::Duration;
 
 /// InputModule retrieves the keys from the hardware or software input control module.
@@ -87,5 +87,11 @@ impl InputModule for CrossTermInput {
             return None;
         };
         None
+    }
+}
+
+impl Drop for CrossTermInput {
+    fn drop(&mut self) {
+        disable_raw_mode().expect("failed to disable terminal raw mode.");
     }
 }
