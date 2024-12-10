@@ -5,11 +5,9 @@ use crate::instruction::{Instruction, ProcessorInstruction};
 use crate::sound::SoundModule;
 use crate::stack::Stack;
 use anyhow::anyhow;
-use log::{debug, info, trace, warn};
+use log::{info, trace, warn};
 use rand::Rng;
-use std::fs::File;
 use std::io::Read;
-use std::path::Path;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
@@ -112,12 +110,12 @@ where
         info!("Loaded font data into memory at 0xf0.");
     }
 
-    /// Emulates the ROM specified at `path`.
-    pub fn emulate<T>(&mut self, path: T) -> Result<(), anyhow::Error>
+    /// Emulates the ROM.
+    pub fn emulate<T>(&mut self, rom: T) -> Result<(), anyhow::Error>
     where
-        T: AsRef<Path> + std::fmt::Display,
+        T: Read,
     {
-        self.load_rom(path)?;
+        self.load_rom(rom)?;
         self.emulation_loop::<T>()?;
         Ok(())
     }
@@ -463,22 +461,11 @@ where
     }
 
     /// Loads the ROM found at the rom path in the emulator's RAM memory.
-    fn load_rom<T>(&mut self, rom_file: T) -> Result<(), anyhow::Error>
+    fn load_rom<T>(&mut self, mut rom: T) -> Result<(), anyhow::Error>
     where
-        T: AsRef<Path> + std::fmt::Display,
+        T: Read,
     {
-        let mut file = File::open(&rom_file)?;
-
-        // Check ROM length if it overflows max RAM size.
-        let rom_size = file.metadata()?.len();
-        debug!("Open ROM {} of size {} bytes.", &rom_file, rom_size);
-        if rom_size > MEMORY_SIZE as u64 - 0x200 {
-            return Err(anyhow!(
-                "ROM at {} overflows emulator's RAM size of 4kB.",
-                &rom_file
-            ));
-        }
-        file.read(&mut self.memory[0x200..])?;
+        rom.read(&mut self.memory[0x200..])?;
 
         // Set program counter to start of memory
         self.program_counter = 0x200;
@@ -493,6 +480,8 @@ mod tests {
     use crate::input::NoInput;
     use crate::sound::TerminalSound;
     use pretty_assertions::assert_eq;
+    use std::fs::File;
+    use std::io::{Seek, SeekFrom};
 
     #[test]
     fn test_load_font_data() {
@@ -508,11 +497,11 @@ mod tests {
         file.read(&mut rom_file_data)
             .expect("Failed to read test ROM");
 
+        let _ = file.seek(SeekFrom::Start(0));
+
         // Test
         let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
-        emulator
-            .load_rom("roms/ibm-logo.ch8")
-            .expect("failed to load ROM");
+        emulator.load_rom(file).expect("failed to load ROM");
 
         // Assert
         assert_eq!(emulator.memory[0x200..0x200 + 132], rom_file_data)

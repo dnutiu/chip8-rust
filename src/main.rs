@@ -4,6 +4,7 @@ use crate::input::CrossTermInput;
 use crate::sound::TerminalSound;
 use clap::Parser;
 use env_logger;
+use std::fs::File;
 
 mod display;
 mod emulator;
@@ -27,8 +28,10 @@ fn main() -> Result<(), anyhow::Error> {
     env_logger::init();
     let args = CliArgs::parse();
 
+    let file = File::open(&args.rom_path)?;
+
     let mut emulator = Emulator::new(RatatuiDisplay::new(), TerminalSound, CrossTermInput::new());
-    emulator.emulate(args.rom_path)?;
+    emulator.emulate(file)?;
 
     Ok(())
 }
