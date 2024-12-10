@@ -25,7 +25,7 @@ pub enum ProcessorInstruction {
     /// Sets the index register
     SetIndexRegister { data: u16 },
     /// Draws to the screen.
-    Draw(u8, u8, u8),
+    Draw { vx: u8, vy: u8, rows: u8 },
     /// Call sets PC to the address and saves the return address on the stack
     Call(u16),
     /// Pops the stack and sets the PC
@@ -152,11 +152,11 @@ impl Instruction {
             // Draw on screen
             (0xD, _, _, _) => {
                 // DXYN
-                ProcessorInstruction::Draw(
-                    Self::grab_first_nibble(data),
-                    Self::grab_middle_nibble(data),
-                    Self::grab_last_nibble(data),
-                )
+                ProcessorInstruction::Draw {
+                    vx: Self::grab_first_nibble(data),
+                    vy: Self::grab_middle_nibble(data),
+                    rows: Self::grab_last_nibble(data),
+                }
             }
             (0x0, 0x0, 0xE, 0xE) => ProcessorInstruction::Return,
             (0x2, _, _, _) => ProcessorInstruction::Call(Self::grab_inner_data(data)),
@@ -529,7 +529,11 @@ mod tests {
         let instruction = Instruction::new([0xDA, 0xBC]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::Draw(0xA, 0xB, 0xC)
+            ProcessorInstruction::Draw {
+                vx: 0xA,
+                vy: 0xB,
+                rows: 0xC
+            }
         )
     }
 

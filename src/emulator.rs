@@ -221,18 +221,16 @@ where
                 trace!("Set index register to data {:04x}", data);
                 self.index_register = data;
             }
-            ProcessorInstruction::Draw(vx_register, vy_register, num_rows) => {
-                trace!(
-                    "Draw vx_register={vx_register} vy_register={vy_register} pixels={num_rows}"
-                );
-                let x_coordinate = self.registers[vx_register as usize];
-                let y_coordinate = self.registers[vy_register as usize];
+            ProcessorInstruction::Draw { vx, vy, rows } => {
+                trace!("Draw vx_register={vx} vy_register={vy} pixels={rows}");
+                let x_coordinate = self.registers[vx as usize];
+                let y_coordinate = self.registers[vy as usize];
 
                 // Keep track if any pixels were flipped
                 let mut flipped = false;
 
                 // Iterate over each row of our sprite
-                for y_line in 0..num_rows {
+                for y_line in 0..rows {
                     // Determine which memory address our row's data is stored
                     let addr = self.index_register + y_line as u16;
                     let pixels = self.memory[addr as usize];
