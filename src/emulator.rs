@@ -201,9 +201,10 @@ where
         match instruction.processor_instruction() {
             ProcessorInstruction::ClearScreen => {
                 trace!("Clear display");
+                self.display_data = [false; DISPLAY_WIDTH * DISPLAY_HEIGHT];
                 self.display.clear()
             }
-            ProcessorInstruction::Jump(address) => {
+            ProcessorInstruction::Jump {address} => {
                 trace!("Jump to address {:04x}", address);
                 self.program_counter = address
             }

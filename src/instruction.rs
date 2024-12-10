@@ -17,7 +17,7 @@ pub enum ProcessorInstruction {
     /// Clears the screen
     ClearScreen,
     /// Jumps to a given address
-    Jump(u16),
+    Jump {address: u16},
     /// Sets the register in the first argument to the given value
     SetRegister(u8, u8),
     /// Adds the value to the register
@@ -125,7 +125,9 @@ impl Instruction {
             // Jump
             (0x1, _, _, _) => {
                 // 1NNN
-                ProcessorInstruction::Jump(Self::grab_inner_data(data))
+                ProcessorInstruction::Jump {
+                    address: Self::grab_inner_data(data)
+                }
             }
             // Set Register
             (0x6, _, _, _) => {
