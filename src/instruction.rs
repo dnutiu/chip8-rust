@@ -55,9 +55,9 @@ pub enum ProcessorInstruction {
     /// Generates a random number ANDed with the data and stores it in VX.
     GenerateRandomNumber { vx: u8, mask: u8 },
     /// Skips the next instruction if VX is equal to data.
-    SkipEqualVXData(u8, u8),
+    SkipEqualVXData {vx: u8, data: u8},
     /// Skip the next instruction if VX is not equal to data.
-    SkipNotEqualVXData(u8, u8),
+    SkipNotEqualVXData {vx: u8, data: u8},
     /// Skips the next instruction if VX is equal to VY.
     SkipEqualVXVY(u8, u8),
     /// Skip the next instruction if VX is not equal to VY.
@@ -205,14 +205,14 @@ impl Instruction {
                 vx: Self::grab_first_nibble(data),
                 mask: Self::grab_last_byte(data),
             },
-            (0x3, _, _, _) => ProcessorInstruction::SkipEqualVXData(
-                Self::grab_first_nibble(data),
-                Self::grab_last_byte(data),
-            ),
-            (0x4, _, _, _) => ProcessorInstruction::SkipNotEqualVXData(
-                Self::grab_first_nibble(data),
-                Self::grab_last_byte(data),
-            ),
+            (0x3, _, _, _) => ProcessorInstruction::SkipEqualVXData{
+                vx: Self::grab_first_nibble(data),
+                data: Self::grab_last_byte(data),
+            },
+            (0x4, _, _, _) => ProcessorInstruction::SkipNotEqualVXData {
+                vx: Self::grab_first_nibble(data),
+                data: Self::grab_last_byte(data),
+            },
             (0x5, _, _, 0x0) => ProcessorInstruction::SkipEqualVXVY(
                 Self::grab_first_nibble(data),
                 Self::grab_middle_nibble(data),
@@ -365,7 +365,7 @@ mod tests {
         let instruction = Instruction::new([0x3A, 0xBC]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SkipEqualVXData(0xA, 0xBC)
+            ProcessorInstruction::SkipEqualVXData{vx: 0xA, data: 0xBC}
         )
     }
 
@@ -374,7 +374,7 @@ mod tests {
         let instruction = Instruction::new([0x4A, 0xBC]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SkipNotEqualVXData(0xA, 0xBC)
+            ProcessorInstruction::SkipNotEqualVXData{vx: 0xA, data: 0xBC}
         )
     }
 
