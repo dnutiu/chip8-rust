@@ -135,6 +135,9 @@ where
                 let _ = tx.send(some_key);
             }
         });
+        // clear display
+        self.display.clear();
+
         loop {
             let now = Instant::now();
             let elapsed_time = now.duration_since(tick_timer);
