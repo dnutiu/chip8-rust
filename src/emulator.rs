@@ -204,11 +204,11 @@ where
                 self.display_data = [false; DISPLAY_WIDTH * DISPLAY_HEIGHT];
                 self.display.clear()
             }
-            ProcessorInstruction::Jump {address} => {
+            ProcessorInstruction::Jump { address } => {
                 trace!("Jump to address {:04x}", address);
                 self.program_counter = address
             }
-            ProcessorInstruction::SetRegister(register, data) => {
+            ProcessorInstruction::SetRegister { register, data } => {
                 trace!("Set register {} to data {:04x}", register, data);
                 self.registers[register as usize] = data
             }

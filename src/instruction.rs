@@ -17,9 +17,9 @@ pub enum ProcessorInstruction {
     /// Clears the screen
     ClearScreen,
     /// Jumps to a given address
-    Jump {address: u16},
+    Jump { address: u16 },
     /// Sets the register in the first argument to the given value
-    SetRegister(u8, u8),
+    SetRegister { register: u8, data: u8 },
     /// Adds the value to the register
     AddValueToRegister(u8, u8),
     /// Sets the index register
@@ -126,16 +126,16 @@ impl Instruction {
             (0x1, _, _, _) => {
                 // 1NNN
                 ProcessorInstruction::Jump {
-                    address: Self::grab_inner_data(data)
+                    address: Self::grab_inner_data(data),
                 }
             }
             // Set Register
             (0x6, _, _, _) => {
                 // 6XNN
-                ProcessorInstruction::SetRegister(
-                    Self::grab_first_nibble(data),
-                    Self::grab_last_byte(data),
-                )
+                ProcessorInstruction::SetRegister {
+                    register: Self::grab_first_nibble(data),
+                    data: Self::grab_last_byte(data),
+                }
             }
             // Add value to register
             (0x7, _, _, _) => {
@@ -328,6 +328,15 @@ mod tests {
     }
 
     #[test]
+    fn test_instruction_jump() {
+        let instruction = Instruction::new([0x1A, 0xBC]);
+        assert_eq!(
+            instruction.processor_instruction,
+            ProcessorInstruction::Jump { address: 0xABC }
+        )
+    }
+
+    #[test]
     fn test_instruction_call() {
         let instruction = Instruction::new([0x2A, 0xBC]);
         assert_eq!(
@@ -386,7 +395,10 @@ mod tests {
         let instruction = Instruction::new([0x61, 0x40]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SetRegister(0x1, 0x40)
+            ProcessorInstruction::SetRegister {
+                register: 0x1,
+                data: 0x40
+            }
         )
     }
 
