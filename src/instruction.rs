@@ -21,7 +21,7 @@ pub enum ProcessorInstruction {
     /// Sets the register in the first argument to the given value
     SetRegister { register: u8, data: u8 },
     /// Adds the value to the register
-    AddValueToRegister(u8, u8),
+    AddValueToRegister { register: u8, value: u8 },
     /// Sets the index register
     SetIndexRegister(u16),
     /// Draws to the screen.
@@ -140,10 +140,10 @@ impl Instruction {
             // Add value to register
             (0x7, _, _, _) => {
                 // 7XNN
-                ProcessorInstruction::AddValueToRegister(
-                    Self::grab_first_nibble(data),
-                    Self::grab_last_byte(data),
-                )
+                ProcessorInstruction::AddValueToRegister {
+                    register: Self::grab_first_nibble(data),
+                    value: Self::grab_last_byte(data),
+                }
             }
             // Set index register
             (0xA, _, _, _) => ProcessorInstruction::SetIndexRegister(Self::grab_inner_data(data)),
@@ -407,7 +407,10 @@ mod tests {
         let instruction = Instruction::new([0x71, 0x40]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::AddValueToRegister(0x1, 0x40)
+            ProcessorInstruction::AddValueToRegister {
+                register: 0x1,
+                value: 0x40
+            }
         )
     }
 

@@ -212,9 +212,9 @@ where
                 trace!("Set register {} to data {:04x}", register, data);
                 self.registers[register as usize] = data
             }
-            ProcessorInstruction::AddValueToRegister(register, data) => {
-                trace!("Add to register {} data {:04x}", register, data);
-                let (result, _) = self.registers[register as usize].overflowing_add(data);
+            ProcessorInstruction::AddValueToRegister { register, value } => {
+                trace!("Add to register {} data {:04x}", register, value);
+                let (result, _) = self.registers[register as usize].overflowing_add(value);
                 self.registers[register as usize] = result;
             }
             ProcessorInstruction::SetIndexRegister(data) => {
