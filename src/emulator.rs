@@ -341,9 +341,9 @@ where
 
                 self.program_counter = address + offset as u16
             }
-            ProcessorInstruction::GenerateRandomNumber(register, data) => {
+            ProcessorInstruction::GenerateRandomNumber { vx, mask } => {
                 trace!("Generate random number");
-                self.registers[register as usize] = rand::thread_rng().gen_range(0x00..0xFF) & data
+                self.registers[vx as usize] = rand::thread_rng().gen_range(0x00..0xFF) & mask
             }
             ProcessorInstruction::SkipEqualVXData(vx, data) => {
                 trace!("SkipEqualVXData");

@@ -53,7 +53,7 @@ pub enum ProcessorInstruction {
     /// Jumps to the address and adds V0 offset.
     JumpWithOffset { address: u16 },
     /// Generates a random number ANDed with the data and stores it in VX.
-    GenerateRandomNumber(u8, u8),
+    GenerateRandomNumber { vx: u8, mask: u8 },
     /// Skips the next instruction if VX is equal to data.
     SkipEqualVXData(u8, u8),
     /// Skip the next instruction if VX is not equal to data.
@@ -201,10 +201,10 @@ impl Instruction {
             (0xB, _, _, _) => ProcessorInstruction::JumpWithOffset {
                 address: Self::grab_inner_data(data),
             },
-            (0xC, _, _, _) => ProcessorInstruction::GenerateRandomNumber(
-                Self::grab_first_nibble(data),
-                Self::grab_last_byte(data),
-            ),
+            (0xC, _, _, _) => ProcessorInstruction::GenerateRandomNumber {
+                vx: Self::grab_first_nibble(data),
+                mask: Self::grab_last_byte(data),
+            },
             (0x3, _, _, _) => ProcessorInstruction::SkipEqualVXData(
                 Self::grab_first_nibble(data),
                 Self::grab_last_byte(data),
@@ -524,7 +524,10 @@ mod tests {
         let instruction = Instruction::new([0xCA, 0xBC]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::GenerateRandomNumber(0xA, 0xBC)
+            ProcessorInstruction::GenerateRandomNumber {
+                vx: 0xA,
+                mask: 0xBC
+            }
         )
     }
 
