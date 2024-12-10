@@ -420,21 +420,21 @@ where
                     self.memory[memory_index] = self.registers[i as usize];
                 }
             }
-            ProcessorInstruction::GetKeyBlocking(vx) => {
+            ProcessorInstruction::GetKeyBlocking { vx } => {
                 if let Some(key) = self.last_key_pressed {
                     self.registers[vx as usize] = key;
                 } else {
                     self.program_counter -= 2;
                 }
             }
-            ProcessorInstruction::SkipIfKeyIsPressed(vx) => {
+            ProcessorInstruction::SkipIfKeyIsPressed { vx } => {
                 if let Some(key) = self.last_key_pressed {
                     if self.registers[vx as usize] == key {
                         self.program_counter += 2;
                     }
                 }
             }
-            ProcessorInstruction::SkipIfKeyIsNotPressed(vx) => {
+            ProcessorInstruction::SkipIfKeyIsNotPressed { vx } => {
                 if let Some(key) = self.last_key_pressed {
                     if self.registers[vx as usize] != key {
                         self.program_counter += 2;

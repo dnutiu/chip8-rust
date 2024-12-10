@@ -79,11 +79,11 @@ pub enum ProcessorInstruction {
     /// Loads the general purpose registers from memory at index register address.
     LoadMemory { vx: u8 },
     /// Blocks execution and waits for input. If a key is pressed it will be put in VX.
-    GetKeyBlocking(u8),
+    GetKeyBlocking { vx: u8 },
     /// Skips one instruction if a key value stored in VX is pressed. Doesn't block execution.
-    SkipIfKeyIsPressed(u8),
+    SkipIfKeyIsPressed { vx: u8 },
     /// Skips one instruction if a key value stored in VX is NOT pressed. Doesn't block execution.
-    SkipIfKeyIsNotPressed(u8),
+    SkipIfKeyIsNotPressed { vx: u8 },
     /// Unknown instruction
     UnknownInstruction,
 }
@@ -245,15 +245,15 @@ impl Instruction {
             (0xF, _, 0x6, 0x5) => ProcessorInstruction::LoadMemory {
                 vx: Self::grab_first_nibble(data),
             },
-            (0xE, _, 0x9, 0xE) => {
-                ProcessorInstruction::SkipIfKeyIsPressed(Self::grab_first_nibble(data))
-            }
-            (0xE, _, 0xA, 0x1) => {
-                ProcessorInstruction::SkipIfKeyIsNotPressed(Self::grab_first_nibble(data))
-            }
-            (0xF, _, 0x0, 0xA) => {
-                ProcessorInstruction::GetKeyBlocking(Self::grab_first_nibble(data))
-            }
+            (0xE, _, 0x9, 0xE) => ProcessorInstruction::SkipIfKeyIsPressed {
+                vx: Self::grab_first_nibble(data),
+            },
+            (0xE, _, 0xA, 0x1) => ProcessorInstruction::SkipIfKeyIsNotPressed {
+                vx: Self::grab_first_nibble(data),
+            },
+            (0xF, _, 0x0, 0xA) => ProcessorInstruction::GetKeyBlocking {
+                vx: Self::grab_first_nibble(data),
+            },
             // Unknown instruction
             _ => ProcessorInstruction::UnknownInstruction,
         }
@@ -633,7 +633,7 @@ mod tests {
         let instruction = Instruction::new([0xEF, 0x9E]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SkipIfKeyIsPressed(0xF)
+            ProcessorInstruction::SkipIfKeyIsPressed { vx: 0xF }
         )
     }
 
@@ -642,7 +642,7 @@ mod tests {
         let instruction = Instruction::new([0xEF, 0xA1]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SkipIfKeyIsNotPressed(0xF)
+            ProcessorInstruction::SkipIfKeyIsNotPressed { vx: 0xF }
         )
     }
 
@@ -651,7 +651,7 @@ mod tests {
         let instruction = Instruction::new([0xFE, 0x0A]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::GetKeyBlocking(0xE)
+            ProcessorInstruction::GetKeyBlocking { vx: 0xF }
         )
     }
 }
