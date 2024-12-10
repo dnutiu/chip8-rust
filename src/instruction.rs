@@ -55,13 +55,13 @@ pub enum ProcessorInstruction {
     /// Generates a random number ANDed with the data and stores it in VX.
     GenerateRandomNumber { vx: u8, mask: u8 },
     /// Skips the next instruction if VX is equal to data.
-    SkipEqualVXData {vx: u8, data: u8},
+    SkipEqualVXData { vx: u8, data: u8 },
     /// Skip the next instruction if VX is not equal to data.
-    SkipNotEqualVXData {vx: u8, data: u8},
+    SkipNotEqualVXData { vx: u8, data: u8 },
     /// Skips the next instruction if VX is equal to VY.
-    SkipEqualVXVY(u8, u8),
+    SkipEqualVXVY { vx: u8, vy: u8 },
     /// Skip the next instruction if VX is not equal to VY.
-    SkipNotEqualVXVY(u8, u8),
+    SkipNotEqualVXVY { vx: u8, vy: u8 },
     /// Sets the value of the VX instruction to the current value of the delay timer.
     SetVXToDelayTimer(u8),
     /// Sets the delay timer to the value in VX.
@@ -205,7 +205,7 @@ impl Instruction {
                 vx: Self::grab_first_nibble(data),
                 mask: Self::grab_last_byte(data),
             },
-            (0x3, _, _, _) => ProcessorInstruction::SkipEqualVXData{
+            (0x3, _, _, _) => ProcessorInstruction::SkipEqualVXData {
                 vx: Self::grab_first_nibble(data),
                 data: Self::grab_last_byte(data),
             },
@@ -213,14 +213,14 @@ impl Instruction {
                 vx: Self::grab_first_nibble(data),
                 data: Self::grab_last_byte(data),
             },
-            (0x5, _, _, 0x0) => ProcessorInstruction::SkipEqualVXVY(
-                Self::grab_first_nibble(data),
-                Self::grab_middle_nibble(data),
-            ),
-            (0x9, _, _, 0x0) => ProcessorInstruction::SkipNotEqualVXVY(
-                Self::grab_first_nibble(data),
-                Self::grab_middle_nibble(data),
-            ),
+            (0x5, _, _, 0x0) => ProcessorInstruction::SkipEqualVXVY {
+                vx: Self::grab_first_nibble(data),
+                vy: Self::grab_middle_nibble(data),
+            },
+            (0x9, _, _, 0x0) => ProcessorInstruction::SkipNotEqualVXVY {
+                vx: Self::grab_first_nibble(data),
+                vy: Self::grab_middle_nibble(data),
+            },
             (0xF, _, 0x0, 0x7) => {
                 ProcessorInstruction::SetVXToDelayTimer(Self::grab_first_nibble(data))
             }
@@ -365,7 +365,10 @@ mod tests {
         let instruction = Instruction::new([0x3A, 0xBC]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SkipEqualVXData{vx: 0xA, data: 0xBC}
+            ProcessorInstruction::SkipEqualVXData {
+                vx: 0xA,
+                data: 0xBC
+            }
         )
     }
 
@@ -374,7 +377,10 @@ mod tests {
         let instruction = Instruction::new([0x4A, 0xBC]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SkipNotEqualVXData{vx: 0xA, data: 0xBC}
+            ProcessorInstruction::SkipNotEqualVXData {
+                vx: 0xA,
+                data: 0xBC
+            }
         )
     }
 
@@ -383,7 +389,7 @@ mod tests {
         let instruction = Instruction::new([0x5A, 0xB0]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SkipEqualVXVY(0xA, 0xB)
+            ProcessorInstruction::SkipEqualVXVY { vx: 0xA, vy: 0xB }
         )
     }
 
@@ -392,7 +398,7 @@ mod tests {
         let instruction = Instruction::new([0x9A, 0xB0]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SkipNotEqualVXVY(0xA, 0xB)
+            ProcessorInstruction::SkipNotEqualVXVY { vx: 0xA, vy: 0xB }
         )
     }
 

@@ -345,21 +345,21 @@ where
                 trace!("Generate random number");
                 self.registers[vx as usize] = rand::thread_rng().gen_range(0x00..0xFF) & mask
             }
-            ProcessorInstruction::SkipEqualVXData { vx, data} => {
+            ProcessorInstruction::SkipEqualVXData { vx, data } => {
                 trace!("SkipEqualVXData");
                 let vx_data = self.registers[vx as usize];
                 if vx_data == data {
                     self.program_counter += 2
                 }
             }
-            ProcessorInstruction::SkipNotEqualVXData { vx, data} => {
+            ProcessorInstruction::SkipNotEqualVXData { vx, data } => {
                 trace!("SkipNotEqualVXData");
                 let vx_data = self.registers[vx as usize];
                 if vx_data != data {
                     self.program_counter += 2
                 }
             }
-            ProcessorInstruction::SkipEqualVXVY(vx, vy) => {
+            ProcessorInstruction::SkipEqualVXVY { vx, vy } => {
                 trace!("SkipNotEqualVXData");
                 let vx_data = self.registers[vx as usize];
                 let vy_data = self.registers[vy as usize];
@@ -367,7 +367,7 @@ where
                     self.program_counter += 2
                 }
             }
-            ProcessorInstruction::SkipNotEqualVXVY(vx, vy) => {
+            ProcessorInstruction::SkipNotEqualVXVY { vx, vy } => {
                 trace!("SkipNotEqualVXVY");
                 let vx_data = self.registers[vx as usize];
                 let vy_data = self.registers[vy as usize];
