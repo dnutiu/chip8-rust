@@ -375,19 +375,19 @@ where
                     self.program_counter += 2
                 }
             }
-            ProcessorInstruction::SetVXToDelayTimer(vx) => {
+            ProcessorInstruction::SetVXToDelayTimer { vx } => {
                 trace!("SetVXToDelayTimer");
                 self.registers[vx as usize] = self.delay_timer
             }
-            ProcessorInstruction::SetDelayTimer(vx) => {
+            ProcessorInstruction::SetDelayTimer { vx } => {
                 trace!("SetDelayTimer");
                 self.delay_timer = self.registers[vx as usize]
             }
-            ProcessorInstruction::SetSoundTimer(vx) => {
+            ProcessorInstruction::SetSoundTimer { vx } => {
                 trace!("SetSoundTimer");
                 self.sound_timer = self.registers[vx as usize]
             }
-            ProcessorInstruction::AddToIndex(vx) => {
+            ProcessorInstruction::AddToIndex { vx } => {
                 trace!("AddToIndex");
                 let (result, overflow) = self
                     .index_register
@@ -399,10 +399,10 @@ where
                     self.registers[0xF] = 0
                 }
             }
-            ProcessorInstruction::FontCharacter(vx) => {
+            ProcessorInstruction::FontCharacter { vx } => {
                 self.index_register = 0xF0 + (self.registers[vx as usize] as u16 & 0xF) * 5u16;
             }
-            ProcessorInstruction::BinaryCodedDecimalConversion(vx) => {
+            ProcessorInstruction::BinaryCodedDecimalConversion { vx } => {
                 let number = self.registers[vx as usize];
                 self.memory[self.index_register as usize] = number / 100;
                 self.memory[self.index_register as usize + 1] = (number / 10) % 10;

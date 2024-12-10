@@ -63,17 +63,17 @@ pub enum ProcessorInstruction {
     /// Skip the next instruction if VX is not equal to VY.
     SkipNotEqualVXVY { vx: u8, vy: u8 },
     /// Sets the value of the VX instruction to the current value of the delay timer.
-    SetVXToDelayTimer(u8),
+    SetVXToDelayTimer { vx: u8 },
     /// Sets the delay timer to the value in VX.
-    SetDelayTimer(u8),
+    SetDelayTimer { vx: u8 },
     /// Sets the sound timer to the value in VX.
-    SetSoundTimer(u8),
+    SetSoundTimer { vx: u8 },
     /// Adds the value of VX to the index register and sets the overflow flag.
-    AddToIndex(u8),
+    AddToIndex { vx: u8 },
     /// Sets the index register to the hexadecimal character in VX.
-    FontCharacter(u8),
+    FontCharacter { vx: u8 },
     /// Converts the number in VX to 3 digits.
-    BinaryCodedDecimalConversion(u8),
+    BinaryCodedDecimalConversion { vx: u8 },
     /// Stores the general purpose registers in memory at index register address.
     StoreMemory(u8),
     /// Loads the general purpose registers from memory at index register address.
@@ -221,22 +221,24 @@ impl Instruction {
                 vx: Self::grab_first_nibble(data),
                 vy: Self::grab_middle_nibble(data),
             },
-            (0xF, _, 0x0, 0x7) => {
-                ProcessorInstruction::SetVXToDelayTimer(Self::grab_first_nibble(data))
-            }
-            (0xF, _, 0x1, 0x5) => {
-                ProcessorInstruction::SetDelayTimer(Self::grab_first_nibble(data))
-            }
-            (0xF, _, 0x1, 0x8) => {
-                ProcessorInstruction::SetSoundTimer(Self::grab_first_nibble(data))
-            }
-            (0xF, _, 0x1, 0xE) => ProcessorInstruction::AddToIndex(Self::grab_first_nibble(data)),
-            (0xF, _, 0x2, 0x9) => {
-                ProcessorInstruction::FontCharacter(Self::grab_first_nibble(data))
-            }
-            (0xF, _, 0x3, 0x3) => {
-                ProcessorInstruction::BinaryCodedDecimalConversion(Self::grab_first_nibble(data))
-            }
+            (0xF, _, 0x0, 0x7) => ProcessorInstruction::SetVXToDelayTimer {
+                vx: Self::grab_first_nibble(data),
+            },
+            (0xF, _, 0x1, 0x5) => ProcessorInstruction::SetDelayTimer {
+                vx: Self::grab_first_nibble(data),
+            },
+            (0xF, _, 0x1, 0x8) => ProcessorInstruction::SetSoundTimer {
+                vx: Self::grab_first_nibble(data),
+            },
+            (0xF, _, 0x1, 0xE) => ProcessorInstruction::AddToIndex {
+                vx: Self::grab_first_nibble(data),
+            },
+            (0xF, _, 0x2, 0x9) => ProcessorInstruction::FontCharacter {
+                vx: Self::grab_first_nibble(data),
+            },
+            (0xF, _, 0x3, 0x3) => ProcessorInstruction::BinaryCodedDecimalConversion {
+                vx: Self::grab_first_nibble(data),
+            },
             (0xF, _, 0x5, 0x5) => ProcessorInstruction::StoreMemory(Self::grab_first_nibble(data)),
             (0xF, _, 0x6, 0x5) => ProcessorInstruction::LoadMemory(Self::grab_first_nibble(data)),
             (0xE, _, 0x9, 0xE) => {
@@ -555,7 +557,7 @@ mod tests {
         let instruction = Instruction::new([0xFA, 0x07]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SetVXToDelayTimer(0xA)
+            ProcessorInstruction::SetVXToDelayTimer { vx: 0xA }
         )
     }
 
@@ -564,7 +566,7 @@ mod tests {
         let instruction = Instruction::new([0xFA, 0x15]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SetDelayTimer(0xA)
+            ProcessorInstruction::SetDelayTimer { vx: 0xA }
         )
     }
 
@@ -573,7 +575,7 @@ mod tests {
         let instruction = Instruction::new([0xFA, 0x18]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::SetSoundTimer(0xA)
+            ProcessorInstruction::SetSoundTimer { vx: 0xA }
         )
     }
 
@@ -582,7 +584,7 @@ mod tests {
         let instruction = Instruction::new([0xFA, 0x1E]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::AddToIndex(0xA)
+            ProcessorInstruction::AddToIndex { vx: 0xA }
         )
     }
 
@@ -591,7 +593,7 @@ mod tests {
         let instruction = Instruction::new([0xFA, 0x29]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::FontCharacter(0xA)
+            ProcessorInstruction::FontCharacter { vx: 0xA }
         )
     }
 
@@ -600,7 +602,7 @@ mod tests {
         let instruction = Instruction::new([0xFA, 0x33]);
         assert_eq!(
             instruction.processor_instruction,
-            ProcessorInstruction::BinaryCodedDecimalConversion(0xA)
+            ProcessorInstruction::BinaryCodedDecimalConversion { vx: 0xA }
         )
     }
 
