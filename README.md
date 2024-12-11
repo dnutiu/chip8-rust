@@ -6,6 +6,12 @@ In turns inside your Terminal and the code can be easily modified to run in othe
 
 See it in action:
 
+### Space Invaders
+
+[![asciicast](https://asciinema.org/a/694431.svg)](https://asciinema.org/a/694431)
+
+### Pong
+
 [![asciicast](https://asciinema.org/a/Q7TCN6e1V2y2Vfm2tCiCSzsAd.svg)](https://asciinema.org/a/Q7TCN6e1V2y2Vfm2tCiCSzsAd)
 
 ---
