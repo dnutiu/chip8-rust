@@ -5,7 +5,7 @@ use crate::instruction::{Instruction, ProcessorInstruction};
 use crate::sound::SoundModule;
 use crate::stack::Stack;
 use anyhow::anyhow;
-use log::{info, trace, warn};
+use log::{debug, info, trace, warn};
 use rand::Rng;
 use std::io::Read;
 use std::sync::mpsc;
@@ -116,12 +116,12 @@ where
         T: Read,
     {
         self.load_rom(rom)?;
-        self.emulation_loop::<T>()?;
+        self.emulation_loop()?;
         Ok(())
     }
 
     /// Emulation loop executes the fetch -> decode -> execute pipeline
-    fn emulation_loop<T>(&mut self) -> Result<(), anyhow::Error> {
+    fn emulation_loop(&mut self) -> Result<(), anyhow::Error> {
         let mut tick_timer = Instant::now();
         let target_fps: u128 = 60;
 
@@ -465,7 +465,9 @@ where
     where
         T: Read,
     {
-        rom.read(&mut self.memory[0x200..])?;
+        let amount = rom.read(&mut self.memory[0x200..])?;
+
+        debug!("Loaded ROM of size {amount} into memory");
 
         // Set program counter to start of memory
         self.program_counter = 0x200;

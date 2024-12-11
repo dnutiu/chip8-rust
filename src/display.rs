@@ -45,7 +45,7 @@ impl Display for TerminalDisplay {
                     print!(" ")
                 }
             }
-            print!("\n")
+            println!()
         }
     }
 }

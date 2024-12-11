@@ -3,7 +3,6 @@ use crate::emulator::Emulator;
 use crate::input::CrossTermInput;
 use crate::sound::TerminalSound;
 use clap::Parser;
-use env_logger;
 use std::fs::File;
 
 mod display;

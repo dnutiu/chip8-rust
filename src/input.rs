@@ -47,39 +47,34 @@ impl InputModule for CrossTermInput {
             // It's guaranteed that read() won't block if `poll` returns `Ok(true)`
             let read_result = read();
 
-            if let Ok(event) = read_result {
-                match event {
-                    Event::Key(key_event) => match key_event.code {
-                        KeyCode::Esc => {
-                            return Some(0xFF);
+            if let Ok(Event::Key(key_event)) = read_result {
+                match key_event.code {
+                    KeyCode::Esc => {
+                        return Some(0xFF);
+                    }
+                    KeyCode::Char(character) => {
+                        if let Some(char) = character.to_lowercase().next() {
+                            return match char {
+                                '1' => Some(1),
+                                '2' => Some(2),
+                                '3' => Some(3),
+                                '4' => Some(0xC),
+                                'q' => Some(4),
+                                'w' => Some(5),
+                                'e' => Some(6),
+                                'r' => Some(0xD),
+                                'a' => Some(7),
+                                's' => Some(8),
+                                'd' => Some(9),
+                                'f' => Some(0xE),
+                                'z' => Some(0xA),
+                                'x' => Some(0),
+                                'c' => Some(0xB),
+                                'v' => Some(0xF),
+                                _ => None,
+                            };
                         }
-                        KeyCode::Char(character) => {
-                            let lowercase_character = character.to_lowercase();
-                            for char in lowercase_character {
-                                return match char {
-                                    '1' => Some(1),
-                                    '2' => Some(2),
-                                    '3' => Some(3),
-                                    '4' => Some(0xC),
-                                    'q' => Some(4),
-                                    'w' => Some(5),
-                                    'e' => Some(6),
-                                    'r' => Some(0xD),
-                                    'a' => Some(7),
-                                    's' => Some(8),
-                                    'd' => Some(9),
-                                    'f' => Some(0xE),
-                                    'z' => Some(0xA),
-                                    'x' => Some(0),
-                                    'c' => Some(0xB),
-                                    'v' => Some(0xF),
-                                    _ => None,
-                                };
-                            }
-                        }
-                        _ => {}
-                    },
-                    // ignore non key events
+                    }
                     _ => {}
                 }
             }
