@@ -398,27 +398,32 @@ where
                 }
             }
             ProcessorInstruction::FontCharacter { vx } => {
+                trace!("FontCharacter");
                 self.index_register = 0xF0 + (self.registers[vx as usize] as u16 & 0xF) * 5u16;
             }
             ProcessorInstruction::BinaryCodedDecimalConversion { vx } => {
+                trace!("BinaryCodedDecimalConversion");
                 let number = self.registers[vx as usize];
                 self.memory[self.index_register as usize] = number / 100;
                 self.memory[self.index_register as usize + 1] = (number / 10) % 10;
                 self.memory[self.index_register as usize + 2] = ((number) % 100) % 10;
             }
             ProcessorInstruction::LoadMemory { vx } => {
+                trace!("LoadMemory");
                 for i in 0..=vx {
                     let memory_index = (self.index_register + (i as u16)) as usize;
                     self.registers[i as usize] = self.memory[memory_index];
                 }
             }
             ProcessorInstruction::StoreMemory { vx } => {
+                trace!("StoreMemory");
                 for i in 0..=vx {
                     let memory_index = (self.index_register + (i as u16)) as usize;
                     self.memory[memory_index] = self.registers[i as usize];
                 }
             }
             ProcessorInstruction::GetKeyBlocking { vx } => {
+                trace!("GetKeyBlocking");
                 if let Some(key) = self.last_key_pressed {
                     self.registers[vx as usize] = key;
                 } else {
@@ -426,6 +431,7 @@ where
                 }
             }
             ProcessorInstruction::SkipIfKeyIsPressed { vx } => {
+                trace!("SkipIfKeyIsPressed");
                 if let Some(key) = self.last_key_pressed {
                     if self.registers[vx as usize] == key {
                         self.program_counter += 2;
@@ -433,6 +439,7 @@ where
                 }
             }
             ProcessorInstruction::SkipIfKeyIsNotPressed { vx } => {
+                trace!("SkipIfKeyIsNotPressed");
                 if let Some(key) = self.last_key_pressed {
                     if self.registers[vx as usize] != key {
                         self.program_counter += 2;
