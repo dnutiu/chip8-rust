@@ -530,4 +530,38 @@ mod tests {
         // Assert
         assert!(emulator.display_data.iter().all(|&pixel| { pixel == false}))
     }
+
+    #[test]
+    fn test_execute_jump() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+
+        emulator.execute_instruction(Instruction::new([0x1A, 0xBC])).expect("Failed to execute");
+
+        assert_eq!(emulator.program_counter, 0xABC)
+    }
+
+    #[test]
+    fn test_set_register() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+
+        for i in 0x0..=0xF {
+            let random_data: u8 = rand::thread_rng().gen_range(0x00..0xFF);
+            emulator.execute_instruction(Instruction::new([0x60 + i, random_data])).expect("Failed to execute");
+            assert_eq!(emulator.registers[i as usize], random_data)
+        }
+    }
+
+    #[test]
+    fn test_add_value_to_register() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+
+        emulator.execute_instruction(Instruction::new([0x71, 0xCC])).expect("Failed to execute");
+        emulator.execute_instruction(Instruction::new([0x75, 0xCC])).expect("Failed to execute");
+
+        assert_eq!(emulator.registers[1], 0xCC);
+        assert_eq!(emulator.registers[5], 0xCC);
+
+        emulator.execute_instruction(Instruction::new([0x75, 0xCC])).expect("Failed to execute");
+        assert_eq!(emulator.registers[5], 0x98);
+    }
 }
