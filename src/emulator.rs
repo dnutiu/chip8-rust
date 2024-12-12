@@ -515,4 +515,19 @@ mod tests {
         // Assert
         assert_eq!(emulator.memory[0x200..0x200 + 132], rom_file_data)
     }
+
+    #[test]
+    fn test_execute_clear_screen_instruction() {
+        // Setup
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        for i in 10..30 {
+            emulator.display_data[i] = true;
+        }
+
+        // Test
+        emulator.execute_instruction(Instruction::new([0x00, 0xE0])).expect("Failed to execute");
+
+        // Assert
+        assert!(emulator.display_data.iter().all(|&pixel| { pixel == false}))
+    }
 }
