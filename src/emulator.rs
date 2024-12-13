@@ -1030,7 +1030,7 @@ mod tests {
     #[test]
     fn test_handle_timers_beep() {
         struct TestSound {
-            did_beep: bool
+            did_beep: bool,
         }
 
         impl SoundModule for TestSound {
@@ -1039,8 +1039,11 @@ mod tests {
             }
         }
 
-
-        let mut emulator = Emulator::new(TerminalDisplay::new(), TestSound { did_beep: false }, NoInput);
+        let mut emulator = Emulator::new(
+            TerminalDisplay::new(),
+            TestSound { did_beep: false },
+            NoInput,
+        );
         emulator.sound_timer = 0;
 
         emulator.handle_timers();
