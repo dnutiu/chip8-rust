@@ -630,4 +630,131 @@ mod tests {
 
         assert_eq!(emulator.program_counter, 0x269);
     }
+
+    #[test]
+    fn test_execute_set() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+
+        emulator
+            .execute_instruction(Instruction::new([0x61, 0x40]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.registers[1], 0x40);
+    }
+
+    #[test]
+    fn test_execute_binary_or() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0x1] = 0x6;
+        emulator.registers[0xF] = 0x9;
+
+        emulator
+            .execute_instruction(Instruction::new([0x81, 0xF1]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.registers[0x1], 0xF);
+    }
+
+    #[test]
+    fn test_execute_binary_and() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0x1] = 0x6;
+        emulator.registers[0xF] = 0x9;
+
+        emulator
+            .execute_instruction(Instruction::new([0x81, 0xF2]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.registers[0x1], 0x0);
+    }
+
+    #[test]
+    fn test_execute_logical_xor() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0x1] = 0x7;
+        emulator.registers[0xF] = 0x9;
+
+        emulator
+            .execute_instruction(Instruction::new([0x81, 0xF3]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.registers[0x1], 0xE);
+    }
+
+    #[test]
+    fn test_execute_logical_add() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0x1] = 0x7;
+        emulator.registers[0xF] = 0x9;
+
+        emulator
+            .execute_instruction(Instruction::new([0x81, 0xF4]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.registers[0x1], 0x10);
+    }
+
+    #[test]
+    fn test_execute_logical_subtract_vx() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0x1] = 0x7;
+        emulator.registers[0xE] = 0x9;
+
+        emulator
+            .execute_instruction(Instruction::new([0x81, 0xE5]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.registers[0x1], 0xFE);
+    }
+
+    #[test]
+    fn test_execute_logical_subtract_vy() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0x1] = 0x7;
+        emulator.registers[0xF] = 0x9;
+
+        emulator
+            .execute_instruction(Instruction::new([0x81, 0xF7]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.registers[0x1], 0xFA);
+    }
+
+    #[test]
+    fn test_execute_logical_shift_left() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0x1] = 0x7;
+        emulator.registers[0x2] = 0x9;
+
+        emulator
+            .execute_instruction(Instruction::new([0x81, 0x2E]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.registers[0x1], 0xE);
+    }
+
+    #[test]
+    fn test_execute_logical_shift_right() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0x1] = 0x7;
+        emulator.registers[0x2] = 0x9;
+
+        emulator
+            .execute_instruction(Instruction::new([0x81, 0x26]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.registers[0x1], 0x3);
+    }
+
+    #[test]
+    fn test_execute_jump_with_offset() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0x0] = 0x2;
+
+        emulator
+            .execute_instruction(Instruction::new([0xBA, 0xBC]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.program_counter, 0xABE);
+    }
 }
