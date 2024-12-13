@@ -854,4 +854,76 @@ mod tests {
 
         assert_eq!(emulator.sound_timer, 0xEE);
     }
+
+    #[test]
+    fn test_execute_add_to_index() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0xA] = 0xEE;
+
+        emulator
+            .execute_instruction(Instruction::new([0xFA, 0x1E]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.index_register, 0xEE);
+    }
+
+    #[test]
+    fn test_execute_get_font_character() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0xA] = 0xEE;
+
+        emulator
+            .execute_instruction(Instruction::new([0xFA, 0x29]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.index_register, 0x136);
+    }
+
+    #[test]
+    fn test_execute_bcd_convert() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0xA] = 0xFE;
+
+        emulator
+            .execute_instruction(Instruction::new([0xFA, 0x33]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.memory[emulator.index_register as usize], 2);
+        assert_eq!(emulator.memory[emulator.index_register as usize + 1], 5);
+        assert_eq!(emulator.memory[emulator.index_register as usize + 2], 4);
+    }
+
+    #[test]
+    fn test_execute_store_memory() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.index_register = 0x20;
+        for i in 0..0xF {
+            emulator.registers[i] = (0xF + i) as u8;
+        }
+
+        emulator
+            .execute_instruction(Instruction::new([0xFF, 0x55]))
+            .expect("Failed to execute");
+
+        for i in 0..0xF {
+            assert_eq!(emulator.memory[(emulator.index_register + i) as usize], (0xF + i) as u8);
+        }
+    }
+
+    #[test]
+    fn test_execute_load_memory() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.index_register = 0x20;
+        for i in 0..0xF {
+            emulator.memory[(emulator.index_register + i) as usize] = (0xF + i) as u8;
+        }
+
+        emulator
+            .execute_instruction(Instruction::new([0xFF, 0x65]))
+            .expect("Failed to execute");
+
+        for i in 0..0xF {
+            assert_eq!(emulator.registers[i], (0xF + i) as u8);
+        }
+    }
 }

@@ -611,7 +611,7 @@ mod tests {
     }
 
     #[test]
-    fn test_instruction_load_memory() {
+    fn test_instruction_store_memory() {
         let instruction = Instruction::new([0xFA, 0x55]);
         assert_eq!(
             instruction.processor_instruction,
@@ -620,7 +620,7 @@ mod tests {
     }
 
     #[test]
-    fn test_instruction_store_memory() {
+    fn test_instruction_load_memory() {
         let instruction = Instruction::new([0xFA, 0x65]);
         assert_eq!(
             instruction.processor_instruction,
