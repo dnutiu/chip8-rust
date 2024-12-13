@@ -1026,4 +1026,25 @@ mod tests {
         assert_eq!(emulator.sound_timer, 9);
         assert_eq!(emulator.delay_timer, 11);
     }
+
+    #[test]
+    fn test_handle_timers_beep() {
+        struct TestSound {
+            did_beep: bool
+        }
+
+        impl SoundModule for TestSound {
+            fn beep(&mut self) {
+                self.did_beep = true;
+            }
+        }
+
+
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TestSound { did_beep: false }, NoInput);
+        emulator.sound_timer = 0;
+
+        emulator.handle_timers();
+
+        assert_eq!(emulator.sound_module.did_beep, true);
+    }
 }
