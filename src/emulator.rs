@@ -168,8 +168,8 @@ where
         if self.delay_timer > 0 {
             self.delay_timer -= 1
         }
-        if self.delay_timer > 0 {
-            self.delay_timer -= 1
+        if self.sound_timer > 0 {
+            self.sound_timer -= 1
         } else {
             self.do_beep()
         }
@@ -995,5 +995,35 @@ mod tests {
             .expect("Failed to execute");
 
         assert_eq!(emulator.registers[0xA], 0xEF);
+    }
+
+    #[test]
+    fn test_fetch_instruction() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.program_counter = 0x200;
+        emulator.memory[0x200] = 0x00;
+        emulator.memory[0x201] = 0xEE;
+
+        let instruction = emulator.fetch_instruction();
+        match instruction {
+            Ok(instruction) => {
+                assert_eq!(instruction, 0x00EE);
+            }
+            Err(_) => {
+                assert!(false, "Did not fetch");
+            }
+        }
+    }
+
+    #[test]
+    fn test_handle_timers() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.sound_timer = 10;
+        emulator.delay_timer = 12;
+
+        emulator.handle_timers();
+
+        assert_eq!(emulator.sound_timer, 9);
+        assert_eq!(emulator.delay_timer, 11);
     }
 }
