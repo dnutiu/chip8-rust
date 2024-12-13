@@ -757,4 +757,65 @@ mod tests {
 
         assert_eq!(emulator.program_counter, 0xABE);
     }
+
+    #[test]
+    fn test_execute_random_number() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+
+        emulator
+            .execute_instruction(Instruction::new([0xCA, 0xBC]))
+            .expect("Failed to execute");
+
+        assert!(emulator.registers[0xA] <= 0xBC)
+    }
+
+    #[test]
+    fn test_execute_skip_equal_vx_data() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0xA] = 0xBC;
+
+        emulator
+            .execute_instruction(Instruction::new([0x3A, 0xBC]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.program_counter, 2);
+    }
+
+    #[test]
+    fn test_execute_skip_not_equal_vx_data() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0xA] = 0xB1;
+
+        emulator
+            .execute_instruction(Instruction::new([0x4A, 0xBC]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.program_counter, 2);
+    }
+
+    #[test]
+    fn test_execute_skip_equal_vx_vy() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0xA] = 0xBC;
+        emulator.registers[0xB] = 0xBC;
+
+        emulator
+            .execute_instruction(Instruction::new([0x5A, 0xB0]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.program_counter, 2);
+    }
+
+    #[test]
+    fn test_execute_skip_not_equal_vx_vy() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0xA] = 0xBD;
+        emulator.registers[0xB] = 0xBC;
+
+        emulator
+            .execute_instruction(Instruction::new([0x9A, 0xB0]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.program_counter, 2);
+    }
 }
