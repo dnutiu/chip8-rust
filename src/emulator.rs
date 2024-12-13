@@ -818,4 +818,40 @@ mod tests {
 
         assert_eq!(emulator.program_counter, 2);
     }
+
+    #[test]
+    fn test_execute_set_vx_to_delay_timer() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.delay_timer = 0xEE;
+
+        emulator
+            .execute_instruction(Instruction::new([0xFA, 0x07]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.registers[0xA], 0xEE);
+    }
+
+    #[test]
+    fn test_execute_set_delay_timer() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0xA] = 0xEE;
+
+        emulator
+            .execute_instruction(Instruction::new([0xFA, 0x15]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.delay_timer, 0xEE);
+    }
+
+    #[test]
+    fn test_execute_set_sound_timer() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0xA] = 0xEE;
+
+        emulator
+            .execute_instruction(Instruction::new([0xFA, 0x18]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.sound_timer, 0xEE);
+    }
 }
