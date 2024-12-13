@@ -906,7 +906,10 @@ mod tests {
             .expect("Failed to execute");
 
         for i in 0..0xF {
-            assert_eq!(emulator.memory[(emulator.index_register + i) as usize], (0xF + i) as u8);
+            assert_eq!(
+                emulator.memory[(emulator.index_register + i) as usize],
+                (0xF + i) as u8
+            );
         }
     }
 
@@ -925,5 +928,59 @@ mod tests {
         for i in 0..0xF {
             assert_eq!(emulator.registers[i], (0xF + i) as u8);
         }
+    }
+
+    #[test]
+    fn test_execute_get_key_blocking() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.program_counter = 0x10;
+
+        emulator
+            .execute_instruction(Instruction::new([0xFE, 0x0A]))
+            .expect("Failed to execute");
+        assert_eq!(emulator.program_counter, 0xE);
+
+        emulator.last_key_pressed = Some(0x1);
+        emulator
+            .execute_instruction(Instruction::new([0xFA, 0x0A]))
+            .expect("Failed to execute");
+        assert_eq!(emulator.program_counter, 0xE);
+        assert_eq!(emulator.registers[0xA], 0x1);
+    }
+
+    #[test]
+    fn test_execute_skip_key_pressed() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.program_counter = 0;
+        emulator.registers[0xA] = 0x1;
+
+        emulator
+            .execute_instruction(Instruction::new([0xEA, 0x9E]))
+            .expect("Failed to execute");
+        assert_eq!(emulator.program_counter, 0);
+
+        emulator.last_key_pressed = Some(0x1);
+        emulator
+            .execute_instruction(Instruction::new([0xEA, 0x9E]))
+            .expect("Failed to execute");
+        assert_eq!(emulator.program_counter, 2);
+    }
+
+    #[test]
+    fn test_execute_skip_key_not_pressed() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.program_counter = 0;
+        emulator.registers[0xA] = 0x1;
+
+        emulator
+            .execute_instruction(Instruction::new([0xEA, 0xA1]))
+            .expect("Failed to execute");
+        assert_eq!(emulator.program_counter, 2);
+
+        emulator.last_key_pressed = Some(0x1);
+        emulator
+            .execute_instruction(Instruction::new([0xEA, 0xA1]))
+            .expect("Failed to execute");
+        assert_eq!(emulator.program_counter, 2);
     }
 }
