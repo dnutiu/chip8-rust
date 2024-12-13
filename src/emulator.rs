@@ -983,4 +983,17 @@ mod tests {
             .expect("Failed to execute");
         assert_eq!(emulator.program_counter, 2);
     }
+
+    #[test]
+    fn test_execute_set_vx_to_vy() {
+        let mut emulator = Emulator::new(TerminalDisplay::new(), TerminalSound, NoInput);
+        emulator.registers[0xA] = 0;
+        emulator.registers[0xB] = 0xEF;
+
+        emulator
+            .execute_instruction(Instruction::new([0x8A, 0xB0]))
+            .expect("Failed to execute");
+
+        assert_eq!(emulator.registers[0xA], 0xEF);
+    }
 }
