@@ -6,6 +6,10 @@ edition = "2021"
 [lints.rust]
 dead_code = "allow"
 
+[profile.release]
+lto = true
+codegen-units = 1
+
 [dependencies]
 log = "0.4.22"
 env_logger = "0.11.5"
