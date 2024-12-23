@@ -56,6 +56,15 @@ The project is written in Rust and it's organized in the following modules:
 │   └── stack.rs # A stack implementation.
 ```
 
+## Resources
+
+I've used the following resources to implement the project:
+
+- https://tobiasvl.github.io/blog/write-a-chip-8-emulator/
+- https://github.com/Timendus/chip8-test-suite
+
+and got inspired by other people's code when I was confused by an instruction. 
+
 
 ---
 Made with ❤️ by [NucuLabs.dev](https://blog.nuculabs.dev)
