@@ -1,7 +1,5 @@
 use ratatui::layout::Rect;
-use ratatui::style::Color;
-use ratatui::symbols::Marker;
-use ratatui::widgets::canvas::Canvas;
+use ratatui::style::{Style, Stylize};
 use ratatui::widgets::{Block, Borders};
 use ratatui::DefaultTerminal;
 
@@ -71,37 +69,34 @@ impl Display for RatatuiDisplay {
     fn render(&mut self, display_data: &[bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]) {
         self.terminal
             .draw(|frame| {
-                let canvas = Canvas::default()
-                    .block(
-                        Block::default()
-                            .title("Chip8 Emulator by nuculabs.dev")
-                            .borders(Borders::ALL),
-                    )
-                    .marker(Marker::Braille)
-                    .paint(|ctx| {
-                        for row in 0..DISPLAY_HEIGHT {
-                            for column in 0..DISPLAY_WIDTH {
-                                if display_data[row * DISPLAY_WIDTH + column] {
-                                    ctx.draw(&ratatui::widgets::canvas::Rectangle {
-                                        x: column as f64,
-                                        y: DISPLAY_HEIGHT as f64 - row as f64,
-                                        width: 1.0,
-                                        height: 1.0,
-                                        color: Color::White,
-                                    });
-                                }
-                            }
-                        }
-                    })
-                    .x_bounds([0.0, DISPLAY_WIDTH as f64])
-                    .y_bounds([0.0, DISPLAY_HEIGHT as f64]);
-
                 // Render the canvas widget
                 frame.render_widget(
-                    canvas,
-                    Rect::new(0, 0, DISPLAY_WIDTH as u16, DISPLAY_HEIGHT as u16),
+                    Block::default()
+                        .title("Chip8 Emulator by nuculabs.dev")
+                        .borders(Borders::ALL),
+                    Rect::new(
+                        0,
+                        0,
+                        (DISPLAY_WIDTH * 2 + 2) as u16,
+                        (DISPLAY_HEIGHT * 2) as u16,
+                    ),
                 );
+                display_data.iter().enumerate().for_each(|(index, pixel)| {
+                    if *pixel {
+                        let x = (index % DISPLAY_WIDTH) as u16;
+                        let y = (index / DISPLAY_WIDTH) as u16;
+                        let area = Rect::new(x * 2, y, 2, 1);
+                        let block = Block::default().style(Style::new().on_white());
+                        frame.render_widget(block, area);
+                    }
+                });
             })
             .expect("failed to draw");
+    }
+}
+
+impl Drop for RatatuiDisplay {
+    fn drop(&mut self) {
+        ratatui::restore();
     }
 }

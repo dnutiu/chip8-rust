@@ -146,7 +146,7 @@ where
                 // Handle sound and delay timer.
                 self.handle_timers();
 
-                for _ in 0..=7 {
+                for _ in 0..=14 {
                     // fetch instruction & decode it
                     let instruction = self.fetch_instruction()?;
                     self.program_counter += 2;
