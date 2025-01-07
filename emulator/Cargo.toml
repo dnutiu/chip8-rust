@@ -1,0 +1,23 @@
+[package]
+name = "emulator"
+version = "0.1.0"
+edition = "2021"
+
+[lints.rust]
+dead_code = "allow"
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+[dependencies]
+log = "0.4.22"
+env_logger = "0.11.5"
+anyhow = "1.0.93"
+ratatui = "0.29.0"
+crossterm = "0.28.1"
+rand = "0.8.5"
+clap = { version = "4.5.23", features = ["derive"] }
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"

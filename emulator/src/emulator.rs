@@ -501,7 +501,7 @@ mod tests {
     #[test]
     fn test_load_rom_ibm_logo() {
         // Setup
-        let mut file = File::open("roms/ibm-logo.ch8").expect("Failed to test open ROM");
+        let mut file = File::open("../../roms/ibm-logo.ch8").expect("Failed to test open ROM");
         let mut rom_file_data: [u8; 132] = [0; 132];
         file.read(&mut rom_file_data)
             .expect("Failed to read test ROM");
