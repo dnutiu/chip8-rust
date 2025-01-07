@@ -1,5 +1,7 @@
 # Chip8 Emulator
 
+![logo](./chip8-project.png)
+
 A Chip8 emulator written in [Rust](https://www.rust-lang.org/) (1.83.0) for learning and educational purposes.
 
 In turns inside your Terminal and the code can be easily modified to run in other envionments.
