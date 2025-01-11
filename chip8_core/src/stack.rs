@@ -23,7 +23,7 @@ impl<T: Debug> Stack<T> {
         self.storage.pop()
     }
 
-    //
+    /// Returns the top element from the stack without removing it.
     pub fn peek(&self) -> Option<&T> {
         self.storage.last()
     }
