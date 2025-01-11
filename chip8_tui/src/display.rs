@@ -3,23 +3,12 @@ use ratatui::style::{Style, Stylize};
 use ratatui::widgets::{Block, Borders};
 use ratatui::DefaultTerminal;
 
-/// Represents the display's width in pixels.
-pub const DISPLAY_WIDTH: usize = 64;
+use emulator::display::{Display, DISPLAY_HEIGHT, DISPLAY_WIDTH};
 
-/// Represents the display's height pixels.
-pub const DISPLAY_HEIGHT: usize = 32;
-
-/// Display trait
-pub trait Display {
-    /// Re-draws the display.
-    fn clear(&mut self);
-    /// Renders the display data on screen.
-    fn render(&mut self, display_data: &[bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]);
-}
-
-/// Simple terminal display for the Chip8's emulator.
+/// Simple terminal display for the Chip8's chip8_core.
 pub struct TerminalDisplay {}
 
+#[allow(dead_code)]
 impl TerminalDisplay {
     pub fn new() -> TerminalDisplay {
         TerminalDisplay {}

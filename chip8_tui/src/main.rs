@@ -1,21 +1,18 @@
+mod display;
+mod input;
+mod sound;
+
 use crate::display::RatatuiDisplay;
-use crate::emulator::Emulator;
 use crate::input::CrossTermInput;
 use crate::sound::TerminalSound;
 use clap::Parser;
+use emulator::emulator::Emulator;
 use std::fs::File;
-
-mod display;
-mod emulator;
-mod input;
-mod instruction;
-mod sound;
-mod stack;
 
 #[derive(Parser, Debug)]
 #[command(
     version = "1.0",
-    about = "A Chip8 emulator.",
+    about = "A Chip8 chip8_core.",
     long_about = "A program which emulates the Chip8 system."
 )]
 struct CliArgs {

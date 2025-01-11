@@ -2,5 +2,6 @@
 resolver = "2"
 
 members = [
-    "emulator",
+    "chip8_tui",
+    "chip8_core",
 ]

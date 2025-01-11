@@ -50,7 +50,7 @@ The project is written in Rust and it's organized in the following modules:
 │   └── ibm-logo.ch8 # IBM Logo Test ROM
 ├── src
 │   ├── display.rs # The screen / display module.
-│   ├── emulator.rs # The emulator logic which emulates the CPU.
+│   ├── chip8_core.rs # The chip8_core logic which emulates the CPU.
 │   ├── input.rs # The input logic.
 │   ├── instruction.rs # The instruction decoding logic.
 │   ├── main.rs # The main file. This is the entrypoint.

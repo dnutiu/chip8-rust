@@ -42,7 +42,7 @@ where
     S: SoundModule,
     I: InputModule,
 {
-    /// Memory represents the emulator's memory.
+    /// Memory represents the chip8_core's memory.
     memory: [u8; MEMORY_SIZE],
     /// Registers holds the general purpose registers.
     registers: [u8; NUMBER_OF_REGISTERS],
@@ -63,7 +63,7 @@ where
     sound_module: S,
     /// The module responsible for receiving user input.
     input_module: I,
-    /// The stack of the emulator.
+    /// The stack of the chip8_core.
     stack: Stack<u16>,
     /// Holds the display data, each bit corresponds to a pixel.
     display_data: [bool; DISPLAY_WIDTH * DISPLAY_HEIGHT],
@@ -467,7 +467,7 @@ where
         ]))
     }
 
-    /// Loads the ROM found at the rom path in the emulator's RAM memory.
+    /// Loads the ROM found at the rom path in the chip8_core's RAM memory.
     fn load_rom<T>(&mut self, mut rom: T) -> Result<(), anyhow::Error>
     where
         T: Read,

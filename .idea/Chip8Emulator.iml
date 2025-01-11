@@ -2,7 +2,8 @@
 <module type="EMPTY_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/emulator/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chip8_core/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/chip8_tui/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
