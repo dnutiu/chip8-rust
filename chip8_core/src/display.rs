@@ -11,3 +11,12 @@ pub trait Display {
     /// Renders the display data on screen.
     fn render(&mut self, display_data: &[bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]);
 }
+
+/// Simple display module for testing. Does nothing.
+pub(crate) struct TestingDisplay;
+
+impl Display for TestingDisplay {
+    fn clear(&mut self) {}
+
+    fn render(&mut self, display_data: &[bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]) {}
+}
