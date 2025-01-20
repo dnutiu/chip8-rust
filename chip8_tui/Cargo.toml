@@ -3,10 +3,6 @@ name = "chip8_tui"
 version = "0.1.0"
 edition = "2021"
 
-[profile.release]
-lto = true
-codegen-units = 1
-
 [dependencies]
 emulator = { path = "../chip8_core" }
 clap = { version = "4.5.26", features = ["derive"] }
