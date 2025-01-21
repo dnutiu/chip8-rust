@@ -18,5 +18,5 @@ pub(crate) struct TestingDisplay;
 impl Display for TestingDisplay {
     fn clear(&mut self) {}
 
-    fn render(&mut self, display_data: &[bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]) {}
+    fn render(&mut self, _display_data: &[bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]) {}
 }

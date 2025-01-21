@@ -7,4 +7,5 @@ resolver = "2"
 members = [
     "chip8_tui",
     "chip8_core",
+    "chip8_sdl",
 ]
