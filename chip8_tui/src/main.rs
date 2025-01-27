@@ -1,13 +1,13 @@
 mod display;
 mod input;
-mod sound;
 
 use crate::display::RatatuiDisplay;
 use crate::input::CrossTermInput;
-use crate::sound::TerminalSound;
 use clap::Parser;
 use emulator::emulator::Emulator;
 use std::fs::File;
+use std::thread::sleep;
+use std::time::Duration;
 
 #[derive(Parser, Debug)]
 #[command(
@@ -26,8 +26,26 @@ fn main() -> Result<(), anyhow::Error> {
 
     let file = File::open(&args.rom_path)?;
 
-    let mut emulator = Emulator::new(RatatuiDisplay::new(), TerminalSound, CrossTermInput::new());
-    emulator.emulate(file)?;
+    let mut emulator = Emulator::new();
+    let mut display = RatatuiDisplay::new();
+    let mut input = CrossTermInput::new();
+    emulator.load_rom(file)?;
 
-    Ok(())
+    display.clear();
+    loop {
+        if emulator.tick() {
+            emulator.handle_input(input.get_key_pressed());
+
+            if emulator.should_beep() {
+                print!("\x07");
+            }
+
+            emulator.execute_and_fetch()?;
+
+            // render
+            display.render(&emulator.get_display_buffer());
+        } else {
+            sleep(Duration::from_millis(1));
+        }
+    }
 }

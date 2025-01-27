@@ -1,15 +1,18 @@
+mod audio;
+mod display;
+
+use crate::audio::SquareWave;
+use crate::display::SdlDisplay;
 use anyhow::anyhow;
 use clap::Parser;
-use emulator::display::{Display, DISPLAY_HEIGHT, DISPLAY_WIDTH};
 use emulator::emulator::Emulator;
-use emulator::input::InputModule;
-use emulator::sound::SoundModule;
-use log::error;
+use sdl2::audio::AudioSpecDesired;
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
-use sdl2::rect::Rect;
-use sdl2::render::WindowCanvas;
-use sdl2::Sdl;
 use std::fs::File;
+use std::thread::sleep;
+use std::time::Duration;
 
 const BACKGROUND_COLOR: Color = Color::RGB(0, 0, 0);
 const PIXEL_COLOR: Color = Color::RGB(0, 255, 0);
@@ -25,85 +28,6 @@ struct CliArgs {
     rom_path: String,
 }
 
-/// SDL2 display module for the Chip8 emulator.
-struct SDLDisplayBackend {
-    canvas: WindowCanvas,
-}
-
-impl SDLDisplayBackend {
-    fn new(sdl_context: &Sdl) -> Result<Self, anyhow::Error> {
-        let video_subsystem = sdl_context.video().map_err(|s| anyhow!(s))?;
-
-        let window = video_subsystem
-            .window("Chip8 Emulator by nuculabs.dev", 816, 648)
-            .vulkan()
-            .build()
-            .map_err(|e| e.to_string())
-            .map_err(|s| anyhow!(s))?;
-
-        let canvas = window
-            .into_canvas()
-            .build()
-            .map_err(|e| e.to_string())
-            .map_err(|s| anyhow!(s))?;
-
-        Ok(SDLDisplayBackend { canvas })
-    }
-}
-
-impl Display for SDLDisplayBackend {
-    fn clear(&mut self) {
-        self.canvas.set_draw_color(BACKGROUND_COLOR);
-        self.canvas.clear();
-    }
-
-    fn render(&mut self, display_data: &[bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]) {
-        for row in 0..32 {
-            for column in 0..64 {
-                if display_data[row * DISPLAY_WIDTH + column] {
-                    self.canvas.set_draw_color(PIXEL_COLOR);
-                    let result = self.canvas.fill_rect(Rect::new(
-                        column as i32 * 12 + 24,
-                        row as i32 * 18 + 18,
-                        12,
-                        18,
-                    ));
-                    if let Err(error_message) = result {
-                        error!("{}", error_message)
-                    }
-                } else {
-                    self.canvas.set_draw_color(BACKGROUND_COLOR);
-                    let result = self.canvas.fill_rect(Rect::new(
-                        column as i32 * 12 + 24,
-                        row as i32 * 18 + 18,
-                        12,
-                        18,
-                    ));
-                    if let Err(error_message) = result {
-                        error!("{}", error_message)
-                    }
-                }
-            }
-        }
-        self.canvas.present()
-    }
-}
-
-struct DummySound;
-
-impl SoundModule for DummySound {
-    fn beep(&mut self) {}
-}
-
-#[derive(Clone)]
-struct DummyInputHandler;
-
-impl InputModule for DummyInputHandler {
-    fn get_key_pressed(&mut self) -> Option<u16> {
-        return None;
-    }
-}
-
 fn main() -> Result<(), anyhow::Error> {
     env_logger::init();
     let args = CliArgs::parse();
@@ -111,33 +35,72 @@ fn main() -> Result<(), anyhow::Error> {
     let file = File::open(&args.rom_path)?;
 
     let sdl_context = sdl2::init().map_err(|s| anyhow!(s))?;
+    let mut sdl_display_backend: SdlDisplay = SdlDisplay::new(&sdl_context)?;
 
-    let sdl_display_backend: SDLDisplayBackend = SDLDisplayBackend::new(&sdl_context)?;
+    let mut event_pump = sdl_context.event_pump().map_err(|s| anyhow!(s))?;
 
-    let mut emulator = Emulator::new(sdl_display_backend, DummySound, DummyInputHandler);
-    emulator.emulate(file)?;
+    let audio_subsystem = sdl_context.audio().unwrap();
+    let desired_spec = AudioSpecDesired {
+        freq: Some(44100),
+        channels: Some(1), // mono
+        samples: None,     // default sample size
+    };
+    let audio_device = audio_subsystem
+        .open_playback(None, &desired_spec, |spec| {
+            // initialize the audio callback
+            SquareWave {
+                phase_inc: 440.0 / spec.freq as f32,
+                phase: 25.0,
+                volume: 0.25,
+            }
+        })
+        .unwrap();
 
-    // let event_pump = sdl_context.event_pump().map_err(|s| anyhow!(s))?;
+    let mut emulator = Emulator::new();
+    emulator.load_rom(file)?;
 
-    // Show it on the screen
-    // canvas.present();
-    // let mut index = 0;
-    // 'main: loop {
-    //     index += 10;
-    //     canvas.fill_rect(Rect::new(index, 100, 10, 10))?;
-    //     canvas.present();
-    //     thread::sleep(Duration::new(1, 0));
-    //     for event in event_pump.poll_iter() {
-    //         match event {
-    //             Event::Quit { .. }
-    //             | Event::KeyDown {
-    //                 keycode: Some(Keycode::Escape),
-    //                 ..
-    //             } => break 'main,
-    //             _ => {}
-    //         }
-    //     }
-    // }
+    sdl_display_backend.clear();
+    loop {
+        if emulator.tick() {
+            let event = event_pump.poll_event();
+            match event {
+                Some(Event::Quit { .. }) => {
+                    emulator.handle_input(Some(0xFF));
+                }
+                Some(Event::KeyDown { keycode, .. }) => match keycode {
+                    Some(Keycode::ESCAPE) => emulator.handle_input(Some(0xFF)),
+                    Some(Keycode::NUM_1) => emulator.handle_input(Some(1)),
+                    Some(Keycode::NUM_2) => emulator.handle_input(Some(2)),
+                    Some(Keycode::NUM_3) => emulator.handle_input(Some(3)),
+                    Some(Keycode::NUM_4) => emulator.handle_input(Some(0xC)),
+                    Some(Keycode::Q) => emulator.handle_input(Some(4)),
+                    Some(Keycode::W) => emulator.handle_input(Some(5)),
+                    Some(Keycode::E) => emulator.handle_input(Some(6)),
+                    Some(Keycode::R) => emulator.handle_input(Some(0xD)),
+                    Some(Keycode::A) => emulator.handle_input(Some(7)),
+                    Some(Keycode::S) => emulator.handle_input(Some(8)),
+                    Some(Keycode::D) => emulator.handle_input(Some(9)),
+                    Some(Keycode::F) => emulator.handle_input(Some(0xE)),
+                    Some(Keycode::Z) => emulator.handle_input(Some(0xA)),
+                    Some(Keycode::X) => emulator.handle_input(Some(0)),
+                    Some(Keycode::C) => emulator.handle_input(Some(0xB)),
+                    Some(Keycode::V) => emulator.handle_input(Some(0xF)),
+                    _ => emulator.handle_input(None),
+                },
+                _ => emulator.handle_input(None),
+            }
 
-    Ok(())
+            if emulator.should_beep() {
+                audio_device.resume();
+            }
+
+            emulator.execute_and_fetch()?;
+
+            // render
+            sdl_display_backend.render(&emulator.get_display_buffer());
+        } else {
+            sleep(Duration::from_millis(1));
+            audio_device.pause();
+        }
+    }
 }

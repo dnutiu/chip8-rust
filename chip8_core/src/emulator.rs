@@ -1,18 +1,11 @@
-use crate::display::Display;
 use crate::display::{DISPLAY_HEIGHT, DISPLAY_WIDTH};
-use crate::input::InputModule;
 use crate::instruction::{Instruction, ProcessorInstruction};
-use crate::sound::SoundModule;
 use crate::stack::Stack;
 use anyhow::anyhow;
 use log::{debug, info, trace, warn};
 use rand::Rng;
 use std::io::Read;
-use std::sync::mpsc;
-use std::sync::mpsc::{Receiver, Sender};
-use std::thread;
-use std::thread::sleep;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 const MEMORY_SIZE: usize = 4096;
 const NUMBER_OF_REGISTERS: usize = 16;
@@ -36,12 +29,7 @@ const FONT_SPRITES: [u8; 80] = [
 ];
 
 /// Emulator emulates the Chip8 CPU.
-pub struct Emulator<D, S, I>
-where
-    D: Display,
-    S: SoundModule,
-    I: InputModule,
-{
+pub struct Emulator {
     /// Memory represents the chip8_core's memory.
     memory: [u8; MEMORY_SIZE],
     /// Registers holds the general purpose registers.
@@ -57,29 +45,22 @@ where
     sound_timer: u8,
     /// The stack pointer register.
     stack_pointer: u8,
-    /// The display_data holds all the data associated with the display
-    display: D,
-    /// The sound module for making sounds.
-    sound_module: S,
-    /// The module responsible for receiving user input.
-    input_module: I,
     /// The stack of the chip8_core.
     stack: Stack<u16>,
     /// Holds the display data, each bit corresponds to a pixel.
     display_data: [bool; DISPLAY_WIDTH * DISPLAY_HEIGHT],
     /// Tracks the last key pressed by the user.
     last_key_pressed: Option<u8>,
+    /// The target FPS on the emulator, default 60.
+    target_fps: u128,
+    /// Last tick
+    last_tick_time: Option<Instant>,
 }
 
-impl<D, S, I> Emulator<D, S, I>
-where
-    D: Display + 'static,
-    S: SoundModule + 'static,
-    I: InputModule + Clone + Send + 'static,
-{
+impl Emulator {
     /// Creates a new `Emulator` instance.
     ///
-    pub fn new(display: D, sound_module: S, input_module: I) -> Emulator<D, S, I> {
+    pub fn new() -> Emulator {
         let mut emulator = Emulator {
             memory: [0; MEMORY_SIZE],
             registers: [0; NUMBER_OF_REGISTERS],
@@ -90,10 +71,9 @@ where
             stack_pointer: 0,
             stack: Stack::new(),
             display_data: [false; DISPLAY_WIDTH * DISPLAY_HEIGHT],
-            display,
-            sound_module,
-            input_module,
             last_key_pressed: None,
+            target_fps: 60,
+            last_tick_time: None,
         };
 
         emulator.load_font_data();
@@ -110,56 +90,16 @@ where
         info!("Loaded font data into memory at 0xf0.");
     }
 
-    /// Emulates the ROM.
-    pub fn emulate<T>(&mut self, rom: T) -> Result<(), anyhow::Error>
-    where
-        T: Read,
-    {
-        self.load_rom(rom)?;
-        self.emulation_loop()?;
-        Ok(())
-    }
+    pub fn execute_and_fetch(&mut self) -> Result<(), anyhow::Error> {
+        for _ in 0..=7 {
+            // fetch instruction & decode it
+            let instruction = self.fetch_instruction()?;
+            self.program_counter += 2;
 
-    /// Emulation loop executes the fetch -> decode -> execute pipeline
-    fn emulation_loop(&mut self) -> Result<(), anyhow::Error> {
-        let mut tick_timer = Instant::now();
-        let target_fps: u128 = 60;
-
-        let (tx, rx): (Sender<u16>, Receiver<u16>) = mpsc::channel();
-        let mut input_module_clone = self.input_module.clone();
-        thread::spawn(move || loop {
-            let key = input_module_clone.get_key_pressed();
-            if let Some(some_key) = key {
-                let _ = tx.send(some_key);
-            }
-        });
-        // clear display
-        self.display.clear();
-
-        loop {
-            let now = Instant::now();
-            let elapsed_time = now.duration_since(tick_timer);
-            let elapsed_ms = elapsed_time.as_millis();
-            if elapsed_ms >= (1000 / target_fps) {
-                self.handle_input(&rx);
-
-                // Handle sound and delay timer.
-                self.handle_timers();
-
-                for _ in 0..=14 {
-                    // fetch instruction & decode it
-                    let instruction = self.fetch_instruction()?;
-                    self.program_counter += 2;
-
-                    // execute
-                    self.execute_instruction(instruction)?;
-                }
-
-                tick_timer = Instant::now();
-            } else {
-                sleep(Duration::from_millis(1));
-            }
+            // execute
+            self.execute_instruction(instruction)?;
         }
+        Ok(())
     }
 
     /// Handles the timers logic.
@@ -170,18 +110,37 @@ where
         }
         if self.sound_timer > 0 {
             self.sound_timer -= 1
-        } else {
-            self.do_beep()
         }
     }
 
+    /// should_beep will return true if the emulator should beep
+    pub fn should_beep(&self) -> bool {
+        self.sound_timer == 0
+    }
+
+    /// Tick ticks the timer.
+    pub fn tick(&mut self) -> bool {
+        let mut return_value = false;
+        if self.last_tick_time.is_some() {
+            let now = Instant::now();
+            let elapsed_time = now.duration_since(self.last_tick_time.unwrap());
+            let elapsed_ms = elapsed_time.as_millis();
+            if elapsed_ms >= (1000 / self.target_fps) {
+                self.last_tick_time = Some(Instant::now());
+                // Handle sound and delay timer.
+                self.handle_timers();
+                return_value = true;
+            }
+        } else {
+            self.last_tick_time = Some(Instant::now());
+        }
+        return_value
+    }
+
     /// Handle the input
-    fn handle_input(&mut self, receiver: &Receiver<u16>) {
-        let received_input = receiver.try_recv();
-        if let Ok(key_pressed) = received_input {
+    pub fn handle_input(&mut self, key_pressed: Option<u16>) {
+        if let Some(key_pressed) = key_pressed {
             if key_pressed == 0xFF {
-                // Exit requested
-                self.display.clear();
                 println!("Thank you for playing! See you next time! :-)");
                 std::process::exit(0);
             } else {
@@ -192,18 +151,12 @@ where
         }
     }
 
-    /// Should make an audible beep.
-    fn do_beep(&mut self) {
-        self.sound_module.beep();
-    }
-
     /// Executes the instruction
     fn execute_instruction(&mut self, instruction: Instruction) -> Result<(), anyhow::Error> {
         match instruction.processor_instruction() {
             ProcessorInstruction::ClearScreen => {
                 trace!("Clear display");
                 self.display_data = [false; DISPLAY_WIDTH * DISPLAY_HEIGHT];
-                self.display.clear()
             }
             ProcessorInstruction::Jump { address } => {
                 trace!("Jump to address {:04x}", address);
@@ -257,7 +210,6 @@ where
                 } else {
                     self.registers[0xF] = 0;
                 }
-                self.display.render(&self.display_data);
             }
             ProcessorInstruction::Return => {
                 let value = self.stack.pop().unwrap();
@@ -467,8 +419,13 @@ where
         ]))
     }
 
+    /// Returns the display buffer of the emulator.
+    pub fn get_display_buffer(&self) -> [bool; 2048] {
+        self.display_data
+    }
+
     /// Loads the ROM found at the rom path in the chip8_core's RAM memory.
-    fn load_rom<T>(&mut self, mut rom: T) -> Result<(), anyhow::Error>
+    pub fn load_rom<T>(&mut self, mut rom: T) -> Result<(), anyhow::Error>
     where
         T: Read,
     {

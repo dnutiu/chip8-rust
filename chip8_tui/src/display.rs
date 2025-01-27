@@ -3,7 +3,7 @@ use ratatui::style::{Style, Stylize};
 use ratatui::widgets::{Block, Borders};
 use ratatui::DefaultTerminal;
 
-use emulator::display::{Display, DISPLAY_HEIGHT, DISPLAY_WIDTH};
+use emulator::display::{DISPLAY_HEIGHT, DISPLAY_WIDTH};
 
 /// Simple terminal display for the Chip8's chip8_core.
 pub struct TerminalDisplay {}
@@ -13,9 +13,7 @@ impl TerminalDisplay {
     pub fn new() -> TerminalDisplay {
         TerminalDisplay {}
     }
-}
 
-impl Display for TerminalDisplay {
     /// Re-draws the display.
     fn clear(&mut self) {
         // ANSI Escape code to move cursor to row 1 column 1
@@ -48,14 +46,12 @@ impl RatatuiDisplay {
             terminal: ratatui::init(),
         }
     }
-}
 
-impl Display for RatatuiDisplay {
-    fn clear(&mut self) {
+    pub fn clear(&mut self) {
         self.terminal.clear().expect("Failed to clear terminal");
     }
 
-    fn render(&mut self, display_data: &[bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]) {
+    pub fn render(&mut self, display_data: &[bool; DISPLAY_WIDTH * DISPLAY_HEIGHT]) {
         self.terminal
             .draw(|frame| {
                 // Render the canvas widget

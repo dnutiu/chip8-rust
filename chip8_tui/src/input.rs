@@ -1,6 +1,5 @@
 use crossterm::event::{poll, read, Event, KeyCode};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
-use emulator::input::InputModule;
 use std::time::Duration;
 
 /// CrossTermInput implements input events via the crossterm crate.
@@ -14,20 +13,12 @@ impl CrossTermInput {
         enable_raw_mode().expect("failed to enable terminal raw mode.");
         CrossTermInput { initialized: true }
     }
-}
 
-impl Default for CrossTermInput {
-    fn default() -> Self {
-        CrossTermInput::new()
-    }
-}
-
-impl InputModule for CrossTermInput {
-    fn get_key_pressed(&mut self) -> Option<u16> {
+    pub fn get_key_pressed(&mut self) -> Option<u16> {
         if !self.initialized {
             panic!("CrossTermInput needs to be constructed using ::new")
         }
-        if let Ok(true) = poll(Duration::from_millis(100)) {
+        if let Ok(true) = poll(Duration::from_millis(25)) {
             // It's guaranteed that read() won't block if `poll` returns `Ok(true)`
             let read_result = read();
 
@@ -66,6 +57,12 @@ impl InputModule for CrossTermInput {
             return None;
         };
         None
+    }
+}
+
+impl Default for CrossTermInput {
+    fn default() -> Self {
+        CrossTermInput::new()
     }
 }
 
