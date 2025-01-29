@@ -85,13 +85,18 @@ fn main() -> Result<(), anyhow::Error> {
                     Some(Keycode::X) => emulator.handle_input(Some(0)),
                     Some(Keycode::C) => emulator.handle_input(Some(0xB)),
                     Some(Keycode::V) => emulator.handle_input(Some(0xF)),
-                    _ => emulator.handle_input(None),
+                    _ => {},
                 },
-                _ => emulator.handle_input(None),
+                Some(Event::KeyUp {..}) => {
+                    emulator.handle_input(None)
+                }
+                _ => {  },
             }
 
             if emulator.should_beep() {
                 audio_device.resume();
+            } else {
+                audio_device.pause();
             }
 
             emulator.execute_and_fetch()?;
@@ -100,7 +105,6 @@ fn main() -> Result<(), anyhow::Error> {
             sdl_display_backend.render(&emulator.get_display_buffer());
         } else {
             sleep(Duration::from_millis(1));
-            audio_device.pause();
         }
     }
 }
