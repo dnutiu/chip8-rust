@@ -4,17 +4,22 @@
 
 A Chip8 emulator written in [Rust](https://www.rust-lang.org/) (1.83.0) for learning and educational purposes.
 
-In turns inside your Terminal and the code can be easily modified to run in other envionments.
+In turns inside your Terminal and under SDL2 and the code can be easily modified to run in other envionments.
 
 See it in action:
 
-### Space Invaders
+### Breakout (Sdl2)
+
+https://videos.nuculabs.dev/w/pD1U8aXToVmNhuZdrCe8qV
+
+### Space Invaders (Terminal Old)
 
 [![asciicast](https://asciinema.org/a/694431.svg)](https://asciinema.org/a/694431)
 
-### Pong
+### Pong (Terminal Old)
 
 [![asciicast](https://asciinema.org/a/Q7TCN6e1V2y2Vfm2tCiCSzsAd.svg)](https://asciinema.org/a/Q7TCN6e1V2y2Vfm2tCiCSzsAd)
+
 
 ---
 
