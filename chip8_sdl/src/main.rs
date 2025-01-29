@@ -85,12 +85,10 @@ fn main() -> Result<(), anyhow::Error> {
                     Some(Keycode::X) => emulator.handle_input(Some(0)),
                     Some(Keycode::C) => emulator.handle_input(Some(0xB)),
                     Some(Keycode::V) => emulator.handle_input(Some(0xF)),
-                    _ => {},
+                    _ => {}
                 },
-                Some(Event::KeyUp {..}) => {
-                    emulator.handle_input(None)
-                }
-                _ => {  },
+                Some(Event::KeyUp { .. }) => emulator.handle_input(None),
+                _ => {}
             }
 
             if emulator.should_beep() {

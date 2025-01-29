@@ -1,4 +1,4 @@
-use crossterm::event::{poll, read, Event, KeyCode};
+use crossterm::event::{poll, read, Event, KeyCode, KeyEventKind};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
 use std::time::Duration;
 
@@ -6,56 +6,61 @@ use std::time::Duration;
 #[derive(Clone)]
 pub struct CrossTermInput {
     initialized: bool,
+    last_key_pressed: Option<u16>,
 }
 
 impl CrossTermInput {
     pub fn new() -> Self {
         enable_raw_mode().expect("failed to enable terminal raw mode.");
-        CrossTermInput { initialized: true }
+        CrossTermInput {
+            initialized: true,
+            last_key_pressed: None,
+        }
     }
 
     pub fn get_key_pressed(&mut self) -> Option<u16> {
         if !self.initialized {
             panic!("CrossTermInput needs to be constructed using ::new")
         }
-        if let Ok(true) = poll(Duration::from_millis(25)) {
-            // It's guaranteed that read() won't block if `poll` returns `Ok(true)`
+        if let Ok(true) = poll(Duration::from_millis(1)) {
             let read_result = read();
 
             if let Ok(Event::Key(key_event)) = read_result {
-                match key_event.code {
-                    KeyCode::Esc => {
-                        return Some(0xFF);
-                    }
-                    KeyCode::Char(character) => {
-                        if let Some(char) = character.to_lowercase().next() {
-                            return match char {
-                                '1' => Some(1),
-                                '2' => Some(2),
-                                '3' => Some(3),
-                                '4' => Some(0xC),
-                                'q' => Some(4),
-                                'w' => Some(5),
-                                'e' => Some(6),
-                                'r' => Some(0xD),
-                                'a' => Some(7),
-                                's' => Some(8),
-                                'd' => Some(9),
-                                'f' => Some(0xE),
-                                'z' => Some(0xA),
-                                'x' => Some(0),
-                                'c' => Some(0xB),
-                                'v' => Some(0xF),
-                                _ => None,
-                            };
+                if key_event.kind == KeyEventKind::Press {
+                    match key_event.code {
+                        KeyCode::Esc => {
+                            return Some(0xFF);
                         }
+                        KeyCode::Char(character) => {
+                            if let Some(char) = character.to_lowercase().next() {
+                                return match char {
+                                    '1' => Some(1),
+                                    '2' => Some(2),
+                                    '3' => Some(3),
+                                    '4' => Some(0xC),
+                                    'q' => Some(4),
+                                    'w' => Some(5),
+                                    'e' => Some(6),
+                                    'r' => Some(0xD),
+                                    'a' => Some(7),
+                                    's' => Some(8),
+                                    'd' => Some(9),
+                                    'f' => Some(0xE),
+                                    'z' => Some(0xA),
+                                    'x' => Some(0),
+                                    'c' => Some(0xB),
+                                    'v' => Some(0xF),
+                                    _ => None,
+                                };
+                            }
+                        }
+                        _ => return None,
                     }
-                    _ => {}
                 }
-            }
-
+                return None;
+            };
             return None;
-        };
+        }
         None
     }
 }
