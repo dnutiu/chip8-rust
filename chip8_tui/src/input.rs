@@ -5,15 +5,13 @@ use std::time::Duration;
 /// CrossTermInput implements input events via the crossterm crate.
 #[derive(Clone)]
 pub struct CrossTermInput {
-    initialized: bool
+    initialized: bool,
 }
 
 impl CrossTermInput {
     pub fn new() -> Self {
         enable_raw_mode().expect("failed to enable terminal raw mode.");
-        CrossTermInput {
-            initialized: true
-        }
+        CrossTermInput { initialized: true }
     }
 
     pub fn get_key_pressed(&mut self) -> Option<u16> {
