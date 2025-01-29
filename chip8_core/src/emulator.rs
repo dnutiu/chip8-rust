@@ -115,7 +115,7 @@ impl Emulator {
 
     /// should_beep will return true if the emulator should beep
     pub fn should_beep(&self) -> bool {
-        self.sound_timer == 0
+        self.sound_timer > 0
     }
 
     /// Tick ticks the timer.
