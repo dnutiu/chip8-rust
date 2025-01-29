@@ -442,16 +442,13 @@ impl Emulator {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::display::TestingDisplay;
-    use crate::input::NoInput;
-    use crate::sound::TestingSound;
     use pretty_assertions::assert_eq;
     use std::fs::File;
     use std::io::{Seek, SeekFrom};
 
     #[test]
     fn test_load_font_data() {
-        let emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let emulator = Emulator::new();
         assert_eq!(emulator.memory[0xf0..0xf0 + 80], FONT_SPRITES)
     }
 
@@ -466,7 +463,7 @@ mod tests {
         let _ = file.seek(SeekFrom::Start(0));
 
         // Test
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.load_rom(file).expect("failed to load ROM");
 
         // Assert
@@ -476,7 +473,7 @@ mod tests {
     #[test]
     fn test_execute_clear_screen_instruction() {
         // Setup
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         for i in 10..30 {
             emulator.display_data[i] = true;
         }
@@ -495,7 +492,7 @@ mod tests {
 
     #[test]
     fn test_execute_jump() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
 
         emulator
             .execute_instruction(Instruction::new([0x1A, 0xBC]))
@@ -506,7 +503,7 @@ mod tests {
 
     #[test]
     fn test_execute_set_register() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
 
         for i in 0x0..=0xF {
             let random_data: u8 = rand::thread_rng().gen_range(0x00..0xFF);
@@ -519,7 +516,7 @@ mod tests {
 
     #[test]
     fn test_execute_add_value_to_register() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
 
         emulator
             .execute_instruction(Instruction::new([0x71, 0xCC]))
@@ -539,7 +536,7 @@ mod tests {
 
     #[test]
     fn test_execute_set_index_register() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
 
         emulator
             .execute_instruction(Instruction::new([0xAA, 0xBC]))
@@ -550,7 +547,7 @@ mod tests {
 
     #[test]
     fn test_execute_draw() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.index_register = 0xF0;
 
         emulator
@@ -565,7 +562,7 @@ mod tests {
 
     #[test]
     fn test_execute_call() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.program_counter = 0x200;
 
         emulator
@@ -578,7 +575,7 @@ mod tests {
 
     #[test]
     fn test_execute_return() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.stack.push(0x269);
 
         emulator
@@ -590,7 +587,7 @@ mod tests {
 
     #[test]
     fn test_execute_set() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
 
         emulator
             .execute_instruction(Instruction::new([0x61, 0x40]))
@@ -601,7 +598,7 @@ mod tests {
 
     #[test]
     fn test_execute_binary_or() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0x1] = 0x6;
         emulator.registers[0xF] = 0x9;
 
@@ -614,7 +611,7 @@ mod tests {
 
     #[test]
     fn test_execute_binary_and() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0x1] = 0x6;
         emulator.registers[0xF] = 0x9;
 
@@ -627,7 +624,7 @@ mod tests {
 
     #[test]
     fn test_execute_logical_xor() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0x1] = 0x7;
         emulator.registers[0xF] = 0x9;
 
@@ -640,7 +637,7 @@ mod tests {
 
     #[test]
     fn test_execute_logical_add() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0x1] = 0x7;
         emulator.registers[0xF] = 0x9;
 
@@ -653,7 +650,7 @@ mod tests {
 
     #[test]
     fn test_execute_logical_subtract_vx() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0x1] = 0x7;
         emulator.registers[0xE] = 0x9;
 
@@ -666,7 +663,7 @@ mod tests {
 
     #[test]
     fn test_execute_logical_subtract_vy() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0x1] = 0x7;
         emulator.registers[0xF] = 0x9;
 
@@ -679,7 +676,7 @@ mod tests {
 
     #[test]
     fn test_execute_logical_shift_left() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0x1] = 0x7;
         emulator.registers[0x2] = 0x9;
 
@@ -692,7 +689,7 @@ mod tests {
 
     #[test]
     fn test_execute_logical_shift_right() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0x1] = 0x7;
         emulator.registers[0x2] = 0x9;
 
@@ -705,7 +702,7 @@ mod tests {
 
     #[test]
     fn test_execute_jump_with_offset() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0x0] = 0x2;
 
         emulator
@@ -717,7 +714,7 @@ mod tests {
 
     #[test]
     fn test_execute_random_number() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
 
         emulator
             .execute_instruction(Instruction::new([0xCA, 0xBC]))
@@ -728,7 +725,7 @@ mod tests {
 
     #[test]
     fn test_execute_skip_equal_vx_data() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0xA] = 0xBC;
 
         emulator
@@ -740,7 +737,7 @@ mod tests {
 
     #[test]
     fn test_execute_skip_not_equal_vx_data() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0xA] = 0xB1;
 
         emulator
@@ -752,7 +749,7 @@ mod tests {
 
     #[test]
     fn test_execute_skip_equal_vx_vy() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0xA] = 0xBC;
         emulator.registers[0xB] = 0xBC;
 
@@ -765,7 +762,7 @@ mod tests {
 
     #[test]
     fn test_execute_skip_not_equal_vx_vy() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0xA] = 0xBD;
         emulator.registers[0xB] = 0xBC;
 
@@ -778,7 +775,7 @@ mod tests {
 
     #[test]
     fn test_execute_set_vx_to_delay_timer() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.delay_timer = 0xEE;
 
         emulator
@@ -790,7 +787,7 @@ mod tests {
 
     #[test]
     fn test_execute_set_delay_timer() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0xA] = 0xEE;
 
         emulator
@@ -802,7 +799,7 @@ mod tests {
 
     #[test]
     fn test_execute_set_sound_timer() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0xA] = 0xEE;
 
         emulator
@@ -814,7 +811,7 @@ mod tests {
 
     #[test]
     fn test_execute_add_to_index() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0xA] = 0xEE;
 
         emulator
@@ -826,7 +823,7 @@ mod tests {
 
     #[test]
     fn test_execute_get_font_character() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0xA] = 0xEE;
 
         emulator
@@ -838,7 +835,7 @@ mod tests {
 
     #[test]
     fn test_execute_bcd_convert() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0xA] = 0xFE;
 
         emulator
@@ -852,7 +849,7 @@ mod tests {
 
     #[test]
     fn test_execute_store_memory() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.index_register = 0x20;
         for i in 0..0xF {
             emulator.registers[i] = (0xF + i) as u8;
@@ -872,7 +869,7 @@ mod tests {
 
     #[test]
     fn test_execute_load_memory() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.index_register = 0x20;
         for i in 0..0xF {
             emulator.memory[(emulator.index_register + i) as usize] = (0xF + i) as u8;
@@ -889,7 +886,7 @@ mod tests {
 
     #[test]
     fn test_execute_get_key_blocking() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.program_counter = 0x10;
 
         emulator
@@ -907,7 +904,7 @@ mod tests {
 
     #[test]
     fn test_execute_skip_key_pressed() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.program_counter = 0;
         emulator.registers[0xA] = 0x1;
 
@@ -925,7 +922,7 @@ mod tests {
 
     #[test]
     fn test_execute_skip_key_not_pressed() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.program_counter = 0;
         emulator.registers[0xA] = 0x1;
 
@@ -943,7 +940,7 @@ mod tests {
 
     #[test]
     fn test_execute_set_vx_to_vy() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.registers[0xA] = 0;
         emulator.registers[0xB] = 0xEF;
 
@@ -956,7 +953,7 @@ mod tests {
 
     #[test]
     fn test_fetch_instruction() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.program_counter = 0x200;
         emulator.memory[0x200] = 0x00;
         emulator.memory[0x201] = 0xEE;
@@ -974,7 +971,7 @@ mod tests {
 
     #[test]
     fn test_handle_timers() {
-        let mut emulator = Emulator::new(TestingDisplay, TestingSound, NoInput);
+        let mut emulator = Emulator::new();
         emulator.sound_timer = 10;
         emulator.delay_timer = 12;
 
@@ -986,21 +983,16 @@ mod tests {
 
     #[test]
     fn test_handle_timers_beep() {
-        struct TestSound {
-            did_beep: bool,
-        }
+        // Given
+        let mut emulator = Emulator::new();
 
-        impl SoundModule for TestSound {
-            fn beep(&mut self) {
-                self.did_beep = true;
-            }
-        }
-
-        let mut emulator = Emulator::new(TestingDisplay, TestSound { did_beep: false }, NoInput);
+        // Then
         emulator.sound_timer = 0;
-
         emulator.handle_timers();
+        assert_eq!(emulator.should_beep(), false);
 
-        assert_eq!(emulator.sound_module.did_beep, true);
+        emulator.sound_timer = 10;
+        emulator.handle_timers();
+        assert_eq!(emulator.should_beep(), true);
     }
 }
