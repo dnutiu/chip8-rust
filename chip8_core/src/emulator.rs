@@ -1,10 +1,10 @@
 use crate::display::{DISPLAY_HEIGHT, DISPLAY_WIDTH};
 use crate::instruction::{Instruction, ProcessorInstruction};
+use crate::read::Reader;
 use crate::stack::Stack;
 use anyhow::anyhow;
 use log::{debug, info, trace, warn};
 use rand::Rng;
-use std::io::Read;
 use std::time::Instant;
 
 const MEMORY_SIZE: usize = 4096;
@@ -103,7 +103,7 @@ impl Emulator {
     }
 
     /// Handles the timers logic.
-    fn handle_timers(&mut self) {
+    pub fn handle_timers(&mut self) {
         // Handle timers
         if self.delay_timer > 0 {
             self.delay_timer -= 1
@@ -427,7 +427,7 @@ impl Emulator {
     /// Loads the ROM found at the rom path in the chip8_core's RAM memory.
     pub fn load_rom<T>(&mut self, mut rom: T) -> Result<(), anyhow::Error>
     where
-        T: Read,
+        T: Reader,
     {
         let amount = rom.read(&mut self.memory[0x200..])?;
 
@@ -448,9 +448,10 @@ impl Default for Emulator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::read::StdFileReader;
     use pretty_assertions::assert_eq;
     use std::fs::File;
-    use std::io::{Seek, SeekFrom};
+    use std::io::{Read, Seek, SeekFrom};
 
     #[test]
     fn test_load_font_data() {
@@ -470,7 +471,9 @@ mod tests {
 
         // Test
         let mut emulator = Emulator::new();
-        emulator.load_rom(file).expect("failed to load ROM");
+        emulator
+            .load_rom(StdFileReader::new(file))
+            .expect("failed to load ROM");
 
         // Assert
         assert_eq!(emulator.memory[0x200..0x200 + 132], rom_file_data)

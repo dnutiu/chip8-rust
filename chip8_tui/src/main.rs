@@ -5,6 +5,7 @@ use crate::display::RatatuiDisplay;
 use crate::input::CrossTermInput;
 use clap::Parser;
 use emulator::emulator::Emulator;
+use emulator::read::StdFileReader;
 use std::fs::File;
 use std::thread::sleep;
 use std::time::Duration;
@@ -29,7 +30,7 @@ fn main() -> Result<(), anyhow::Error> {
     let mut emulator = Emulator::new();
     let mut display = RatatuiDisplay::new();
     let mut input = CrossTermInput::new();
-    emulator.load_rom(file)?;
+    emulator.load_rom(StdFileReader::new(file))?;
 
     display.clear();
     loop {

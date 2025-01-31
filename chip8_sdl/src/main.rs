@@ -6,6 +6,7 @@ use crate::display::SdlDisplay;
 use anyhow::anyhow;
 use clap::Parser;
 use emulator::emulator::Emulator;
+use emulator::read::StdFileReader;
 use sdl2::audio::AudioSpecDesired;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -57,7 +58,7 @@ fn main() -> Result<(), anyhow::Error> {
         .unwrap();
 
     let mut emulator = Emulator::new();
-    emulator.load_rom(file)?;
+    emulator.load_rom(StdFileReader::new(file))?;
 
     sdl_display_backend.clear();
     loop {

@@ -6,6 +6,11 @@ edition = "2021"
 [lints.rust]
 dead_code = "allow"
 
+[features]
+default = ["std"]
+std = []
+
+
 [dependencies]
 log = "0.4.22"
 anyhow = "1.0.93"
