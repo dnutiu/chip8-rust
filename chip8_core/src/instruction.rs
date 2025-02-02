@@ -1,5 +1,6 @@
-use std::fmt;
-use std::fmt::{Display, Formatter, LowerHex};
+use alloc::format;
+use core::fmt;
+use core::fmt::{Display, Formatter, LowerHex};
 /*
 Although every instruction will have a first nibble that tells you what kind of instruction it is,
 the rest of the nibbles will have different meanings. To differentiate these meanings,

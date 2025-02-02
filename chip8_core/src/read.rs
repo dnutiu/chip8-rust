@@ -1,5 +1,7 @@
 #[cfg(feature = "std")]
 use std::fs::File;
+
+#[cfg(feature = "std")]
 use std::io::Read;
 
 pub trait Reader {

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-emulator = { path = "../chip8_core" }
+chip8_core = { path = "../chip8_core", features = ["std"] }
 clap = { version = "4.5.26", features = ["derive"] }
 anyhow = "1.0.95"
 env_logger = "0.11.6"

@@ -3,7 +3,7 @@ use ratatui::style::{Style, Stylize};
 use ratatui::widgets::{Block, Borders};
 use ratatui::DefaultTerminal;
 
-use emulator::display::{DISPLAY_HEIGHT, DISPLAY_WIDTH};
+use chip8_core::display::{DISPLAY_HEIGHT, DISPLAY_WIDTH};
 
 /// Simple terminal display for the Chip8's chip8_core.
 pub struct TerminalDisplay {}

@@ -1,6 +1,6 @@
 use crate::{BACKGROUND_COLOR, PIXEL_COLOR};
 use anyhow::anyhow;
-use emulator::display::{DISPLAY_HEIGHT, DISPLAY_WIDTH};
+use chip8_core::display::{DISPLAY_HEIGHT, DISPLAY_WIDTH};
 use log::error;
 use sdl2::rect::Rect;
 use sdl2::render::WindowCanvas;

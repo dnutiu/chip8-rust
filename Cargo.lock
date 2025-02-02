@@ -118,12 +118,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "chip8_core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "log",
+ "pretty_assertions",
+ "rand",
+]
+
+[[package]]
 name = "chip8_sdl"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chip8_core",
  "clap",
- "emulator",
  "env_logger",
  "log",
  "sdl2",
@@ -134,9 +144,9 @@ name = "chip8_tui"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "chip8_core",
  "clap",
  "crossterm",
- "emulator",
  "env_logger",
  "ratatui",
 ]
@@ -272,16 +282,6 @@ name = "either"
 version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0"
-
-[[package]]
-name = "emulator"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "log",
- "pretty_assertions",
- "rand",
-]
 
 [[package]]
 name = "env_filter"

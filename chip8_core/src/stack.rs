@@ -1,4 +1,5 @@
-use std::fmt::Debug;
+use alloc::vec::Vec;
+use core::fmt::Debug;
 
 /// Implements a simple stack based on a vector.
 #[derive(Debug)]
