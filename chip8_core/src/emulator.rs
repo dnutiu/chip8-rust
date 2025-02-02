@@ -1,3 +1,6 @@
+#[cfg(feature = "std")]
+use std::time::Instant;
+
 use crate::display::{DISPLAY_HEIGHT, DISPLAY_WIDTH};
 use crate::instruction::{Instruction, ProcessorInstruction};
 use crate::read::Reader;
@@ -412,6 +415,24 @@ impl Default for Emulator {
     fn default() -> Self {
         Self::new()
     }
+}
+
+#[cfg(feature = "std")]
+/// Determines if the emulator should run, aiming for 60FPS per second.
+pub fn tick(last_tick_time: &mut Option<Instant>) -> bool {
+    let mut return_value = false;
+    if last_tick_time.is_some() {
+        let now = Instant::now();
+        let elapsed_time = now.duration_since(last_tick_time.unwrap());
+        let elapsed_ms = elapsed_time.as_millis();
+        if elapsed_ms >= (1000 / 60) {
+            *last_tick_time = Some(Instant::now());
+            return_value = true;
+        }
+    } else {
+        *last_tick_time = Some(Instant::now());
+    }
+    return_value
 }
 
 #[cfg(test)]

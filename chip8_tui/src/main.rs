@@ -4,7 +4,7 @@ mod input;
 use crate::display::RatatuiDisplay;
 use crate::input::CrossTermInput;
 use clap::Parser;
-use chip8_core::emulator::Emulator;
+use chip8_core::emulator::{tick, Emulator};
 use chip8_core::read::StdFileReader;
 use std::fs::File;
 use std::thread::sleep;
@@ -33,8 +33,10 @@ fn main() -> Result<(), anyhow::Error> {
     emulator.load_rom(StdFileReader::new(file))?;
 
     display.clear();
+
+    let mut last_tick_time = None;
     loop {
-        if emulator.tick() {
+        if tick(&mut last_tick_time) {
             emulator.handle_input(input.get_key_pressed());
 
             if emulator.should_beep() {

@@ -5,7 +5,7 @@ use crate::audio::SquareWave;
 use crate::display::SdlDisplay;
 use anyhow::anyhow;
 use clap::Parser;
-use chip8_core::emulator::Emulator;
+use chip8_core::emulator::{Emulator, tick};
 use chip8_core::read::StdFileReader;
 use sdl2::audio::AudioSpecDesired;
 use sdl2::event::Event;
@@ -13,7 +13,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use std::fs::File;
 use std::thread::sleep;
-use std::time::{Duration, Instant};
+use std::time::{Duration};
 
 const BACKGROUND_COLOR: Color = Color::RGB(0, 0, 0);
 const PIXEL_COLOR: Color = Color::RGB(0, 255, 0);
@@ -29,22 +29,7 @@ struct CliArgs {
     rom_path: String,
 }
 
-/// Determines if the emulator should run, aiming for 60FPS per second.
-pub fn should_run(last_tick_time: &mut Option<Instant>) -> bool {
-    let mut return_value = false;
-    if last_tick_time.is_some() {
-        let now = Instant::now();
-        let elapsed_time = now.duration_since(last_tick_time.unwrap());
-        let elapsed_ms = elapsed_time.as_millis();
-        if elapsed_ms >= (1000 / 60) {
-            *last_tick_time = Some(Instant::now());
-            return_value = true;
-        }
-    } else {
-        *last_tick_time = Some(Instant::now());
-    }
-    return_value
-}
+
 
 fn main() -> Result<(), anyhow::Error> {
     env_logger::init();
@@ -81,7 +66,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     let mut last_tick_time = None;
     loop {
-        if should_run(&mut last_tick_time) {
+        if tick(&mut last_tick_time) {
             emulator.handle_timers();
 
             let event = event_pump.poll_event();
