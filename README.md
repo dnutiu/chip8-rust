@@ -20,6 +20,20 @@ https://videos.nuculabs.dev/w/pD1U8aXToVmNhuZdrCe8qV
 
 [![asciicast](https://asciinema.org/a/Q7TCN6e1V2y2Vfm2tCiCSzsAd.svg)](https://asciinema.org/a/Q7TCN6e1V2y2Vfm2tCiCSzsAd)
 
+# Project organization
+
+The project is organized under three crates.
+
+The `chip8_core` crate contains the core functionality for the emulator and can be compiled without
+depending on Rust's std (standard) library, this makes it possible to run it on embedded systems.
+
+The `chip8_sdl` crate is an emulator implementation that uses sdl for graphics and audio.
+
+The `chip8_tui` crate is an emulator implementation that runs inside the terminal.
+
+## Tests
+
+You can run tests with `cargo test`
 
 ---
 
