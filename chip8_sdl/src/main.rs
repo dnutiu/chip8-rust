@@ -13,7 +13,7 @@ use sdl2::keyboard::Keycode;
 use sdl2::pixels::Color;
 use std::fs::File;
 use std::thread::sleep;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 const BACKGROUND_COLOR: Color = Color::RGB(0, 0, 0);
 const PIXEL_COLOR: Color = Color::RGB(0, 255, 0);
@@ -27,6 +27,23 @@ const PIXEL_COLOR: Color = Color::RGB(0, 255, 0);
 struct CliArgs {
     /// The path to the ROM file to emulate.
     rom_path: String,
+}
+
+/// Determines if the emulator should run, aiming for 60FPS per second.
+pub fn should_run(last_tick_time: &mut Option<Instant>) -> bool {
+    let mut return_value = false;
+    if last_tick_time.is_some() {
+        let now = Instant::now();
+        let elapsed_time = now.duration_since(last_tick_time.unwrap());
+        let elapsed_ms = elapsed_time.as_millis();
+        if elapsed_ms >= (1000 / 60) {
+            *last_tick_time = Some(Instant::now());
+            return_value = true;
+        }
+    } else {
+        *last_tick_time = Some(Instant::now());
+    }
+    return_value
 }
 
 fn main() -> Result<(), anyhow::Error> {
@@ -61,15 +78,23 @@ fn main() -> Result<(), anyhow::Error> {
     emulator.load_rom(StdFileReader::new(file))?;
 
     sdl_display_backend.clear();
+
+    let mut last_tick_time = None;
     loop {
-        if emulator.tick() {
+        if should_run(&mut last_tick_time) {
+            emulator.handle_timers();
+
             let event = event_pump.poll_event();
             match event {
                 Some(Event::Quit { .. }) => {
-                    emulator.handle_input(Some(0xFF));
+                    println!("Thank you for playing!");
+                    std::process::exit(0);
                 }
                 Some(Event::KeyDown { keycode, .. }) => match keycode {
-                    Some(Keycode::ESCAPE) => emulator.handle_input(Some(0xFF)),
+                    Some(Keycode::ESCAPE) => {
+                        println!("Thank you for playing!");
+                        std::process::exit(0);
+                    },
                     Some(Keycode::NUM_1) => emulator.handle_input(Some(1)),
                     Some(Keycode::NUM_2) => emulator.handle_input(Some(2)),
                     Some(Keycode::NUM_3) => emulator.handle_input(Some(3)),
