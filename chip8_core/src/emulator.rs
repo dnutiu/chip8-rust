@@ -5,7 +5,6 @@ use crate::stack::Stack;
 use anyhow::anyhow;
 use log::{debug, info, trace, warn};
 use rand::Rng;
-use std::time::Instant;
 
 const MEMORY_SIZE: usize = 4096;
 const NUMBER_OF_REGISTERS: usize = 16;
@@ -51,10 +50,6 @@ pub struct Emulator {
     display_data: [bool; DISPLAY_WIDTH * DISPLAY_HEIGHT],
     /// Tracks the last key pressed by the user.
     last_key_pressed: Option<u8>,
-    /// The target FPS on the emulator, default 60.
-    target_fps: u128,
-    /// Last tick
-    last_tick_time: Option<Instant>,
 }
 
 impl Emulator {
@@ -71,9 +66,7 @@ impl Emulator {
             stack_pointer: 0,
             stack: Stack::new(),
             display_data: [false; DISPLAY_WIDTH * DISPLAY_HEIGHT],
-            last_key_pressed: None,
-            target_fps: 60,
-            last_tick_time: None,
+            last_key_pressed: None
         };
 
         emulator.load_font_data();
@@ -118,34 +111,10 @@ impl Emulator {
         self.sound_timer > 0
     }
 
-    /// Tick ticks the timer.
-    pub fn tick(&mut self) -> bool {
-        let mut return_value = false;
-        if self.last_tick_time.is_some() {
-            let now = Instant::now();
-            let elapsed_time = now.duration_since(self.last_tick_time.unwrap());
-            let elapsed_ms = elapsed_time.as_millis();
-            if elapsed_ms >= (1000 / self.target_fps) {
-                self.last_tick_time = Some(Instant::now());
-                // Handle sound and delay timer.
-                self.handle_timers();
-                return_value = true;
-            }
-        } else {
-            self.last_tick_time = Some(Instant::now());
-        }
-        return_value
-    }
-
     /// Handle the input
     pub fn handle_input(&mut self, key_pressed: Option<u16>) {
         if let Some(key_pressed) = key_pressed {
-            if key_pressed == 0xFF {
-                println!("Thank you for playing! See you next time! :-)");
-                std::process::exit(0);
-            } else {
-                self.last_key_pressed = Option::from((key_pressed & 0xF) as u8)
-            }
+            self.last_key_pressed = Option::from((key_pressed & 0xF) as u8)
         } else {
             self.last_key_pressed = None;
         }
@@ -450,6 +419,7 @@ mod tests {
     use super::*;
     use crate::read::StdFileReader;
     use pretty_assertions::assert_eq;
+    extern crate std;
     use std::fs::File;
     use std::io::{Read, Seek, SeekFrom};
 
